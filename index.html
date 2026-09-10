@@ -1,0 +1,2387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直播报备格式化工具 · 智能识别 + 一键复制优化版</title>
+    <style>
+        :root {
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --radius: 14px;
+            --shadow: 0 2px 6px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.08);
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-sans); background: linear-gradient(180deg, #eef2f7 0%, #f5f7fa 320px); color: var(--text); line-height: 1.6; min-height: 100vh; padding: 26px 24px 40px; }
+        .page-header { max-width: 1680px; margin: 0 auto 18px; padding: 0 4px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .page-header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.01em; }
+        .page-header .page-badge { font-size: 0.7rem; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; padding: 3px 10px; border-radius: 999px; }
+        .page-header .page-sub { font-size: 0.82rem; color: var(--text-secondary); }
+        .page-header .page-build { font-size: 0.7rem; font-weight: 600; color: #15803d; background: #f0fdf4; border: 1px dashed #86efac; padding: 3px 10px; border-radius: 6px; margin-left: auto; }
+        .app-container { max-width: 1760px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.05fr 1.1fr 1fr; gap: 18px; align-items: start; }
+        @media (max-width: 1500px) { .app-container { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 900px) { .app-container { grid-template-columns: 1fr; gap: 16px; } }
+        .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 26px; border: 1px solid var(--border); transition: box-shadow 0.25s; }
+        .card:hover { box-shadow: var(--shadow-hover); }
+        .card-accent-blue { border-top: 4px solid var(--primary); }
+        .card-accent-violet { border-top: 4px solid #8b5cf6; }
+        .card-accent-green { border-top: 4px solid var(--success); }
+        .card-accent-orange { border-top: 4px solid #f97316; }
+        /* 第四板块：直播间信息智能检查 */
+        .check-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+        .check-account { font-size: 0.9rem; color: var(--text-secondary); }
+        .check-account b { color: var(--text); font-weight: 700; }
+        .btn-jump { margin-left: 2px; padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; background: #fff7ed; color: #c2410c; border: 1px solid #fdba74; text-decoration: none; white-space: nowrap; font-weight: 600; transition: all 0.2s; }
+        .btn-jump:hover { background: #ffedd5; border-color: #f97316; }
+        .check-status { font-size: 0.85rem; font-weight: 600; }
+        .check-status.loading { color: #b45309; }
+        .check-status.ok { color: var(--success); }
+        .check-status.err { color: var(--danger); }
+        .check-result { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
+        .check-item { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; background: #fafbfc; }
+        /* 央视三兄弟：一次性展示三个直播间信息，供人工目视核对 */
+        .btn-collapse { padding: 6px 14px; font-size: 0.8rem; border-radius: 8px; background: #fff; color: #475569; border: 1.5px solid var(--border); font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .btn-collapse:hover { border-color: var(--text-secondary); background: #f8fafc; }
+        .check-bar-clear { margin-top: 12px; margin-bottom: 12px; }
+        /* 操作区与结果展示区之间的分隔线 */
+        .result-divider { margin: 0 0 16px; border: none; border-top: 1px solid var(--border); }
+        /* 结果区顶部：标明正在检查的直播间昵称 */
+        .result-caption { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; padding: 9px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; font-size: 0.86rem; color: #1e40af; }
+        .result-caption b { color: #1d4ed8; font-weight: 700; }
+        .result-caption .rc-room { font-size: 0.76rem; color: #64748b; }
+        .btn-clear { padding: 8px 18px; font-size: 0.82rem; border-radius: 8px; background: #fff; color: #64748b; border: 1.5px solid var(--border); font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-clear:hover { border-color: #ef4444; color: #dc2626; background: #fef2f2; }
+        .trio-result { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
+        .trio-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; background: #fafbfc; }
+        .trio-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        .trio-name { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+        .trio-room { font-size: 0.76rem; color: var(--text-secondary); font-weight: 500; }
+        .trio-link { font-size: 0.76rem; color: #2563eb; text-decoration: none; font-weight: 600; }
+        .trio-link:hover { text-decoration: underline; }
+        .trio-rows { display: flex; flex-direction: column; gap: 10px; }
+        .trio-row { display: flex; gap: 12px; align-items: flex-start; }
+        .trio-lbl { flex: 0 0 56px; font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; padding-top: 2px; }
+        .trio-val { flex: 1; font-size: 0.86rem; color: var(--text); line-height: 1.6; word-break: break-word; }
+        .trio-cover { max-width: 220px; width: 100%; border-radius: 8px; border: 1px solid var(--border); display: block; }
+        /* 指定直播间检查：入口在按钮区，结果单独成区 */
+        .spec-entry { margin-top: 14px; }
+        .spec-section { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--border); }
+        .spec-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .spec-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .spec-bar input { flex: 1 1 260px; min-width: 200px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.86rem; color: var(--text); }
+        .spec-bar input:focus { outline: none; border-color: var(--primary); }
+        .spec-bar .btn { padding: 10px 18px; font-size: 0.86rem; }
+        .spec-tpl { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+        .spec-tpl .form-group { flex: 1 1 200px; margin: 0; }
+        .spec-tpl label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px; }
+        .spec-tpl input, .spec-tpl textarea { width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.82rem; color: var(--text); font-family: inherit; }
+        .spec-tpl input:focus, .spec-tpl textarea:focus { outline: none; border-color: var(--primary); }
+        .spec-tpl textarea { resize: vertical; min-height: 52px; }
+        .check-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .check-name { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+        .check-badge { font-size: 0.78rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+        .check-badge.match { background: var(--success-bg); color: #15803d; border: 1px solid #bbf7d0; }
+        .check-badge.mismatch { background: var(--danger-bg); color: #b91c1c; border: 1px solid #fecaca; }
+        .check-badge.manual { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .check-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .check-col { min-width: 0; }
+        .check-lbl { display: block; font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .check-val { font-size: 0.86rem; line-height: 1.6; color: var(--text); word-break: break-word; white-space: pre-wrap; }
+        .check-cover { max-width: 100%; max-height: 180px; border-radius: 8px; border: 1px solid var(--border); display: block; }
+        .check-note { font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; line-height: 1.7; }
+        @media (max-width: 560px) { .check-cols { grid-template-columns: 1fr; } }
+        .card-header h2 .step { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: #eef2ff; color: #4f46e5; font-size: 0.85rem; font-weight: 800; flex: none; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 2px solid var(--border); }
+        .card-header h2 { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .card-header .subtitle { font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .form-group label .required { color: var(--danger); margin-left: 2px; }
+        .form-group input[type="text"], .form-group textarea { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-family: var(--font-sans); transition: border-color 0.2s, box-shadow 0.2s; background: #fafbfc; resize: vertical; color: var(--text); line-height: 1.5; }
+        .form-group input[type="text"]:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12); background: #fff; }
+        .form-group textarea { min-height: 100px; }
+        .form-group textarea.code-area { font-family: var(--font-mono); font-size: 0.82rem; min-height: 80px; }
+        .form-group .hint { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; opacity: 0.75; }
+        .smart-paste-area { background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 24px; transition: all 0.2s; }
+        .smart-paste-area:hover { border-color: var(--primary); background: #f0f7ff; }
+        .smart-paste-area label { font-weight: 700; font-size: 0.95rem; color: var(--text); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .smart-paste-area textarea { min-height: 320px; background: #fff; font-size: 0.92rem; padding: 16px; line-height: 1.75; }
+        .smart-paste-area .btn-group { margin-top: 12px; }
+        .paste-with-actions { display: flex; gap: 12px; align-items: stretch; }
+        .paste-with-actions > textarea { flex: 1; min-width: 0; }
+        .paste-side-actions { display: flex; flex-direction: column; justify-content: flex-start; gap: 10px; min-width: 150px; flex: none; }
+        .paste-side-actions .btn { white-space: normal; line-height: 1.35; padding: 12px 14px; font-size: 0.92rem; }
+        @media (max-width: 720px) {
+            .paste-with-actions { flex-direction: column; }
+            .paste-side-actions { flex-direction: row; min-width: 0; width: 100%; }
+        }
+        .account-selector { display: flex; flex-direction: column; gap: 10px; }
+        .account-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .account-btn { padding: 10px 20px; border-radius: 10px; border: 2px solid var(--border); background: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); transition: all 0.2s; }
+        .account-btn:hover { border-color: var(--primary); color: var(--primary); background: #f0f7ff; }
+        .account-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3); }
+        /* 央视新闻 / 新华社 / 人民日报：重点账号，醒目红色 */
+        .account-btn.main { border-color: #dc2626; color: #b91c1c; background: #fef2f2; }
+        .account-btn.main:hover { border-color: #b91c1c; color: #991b1b; background: #fee2e2; }
+        .account-btn.main.active { border-color: #b91c1c; background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35); }
+        .toggle-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .toggle-btn { padding: 10px 18px; border-radius: 10px; border: 2px solid var(--border); background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .toggle-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+        .toggle-btn.danger.active { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); }
+        .toggle-btn .indicator { width: 20px; height: 20px; border-radius: 6px; border: 2px solid currentColor; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+        .cover-upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.25s; background: #fafbfc; min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; user-select: none; }
+        .cover-upload-area:hover { border-color: var(--primary); background: #f0f7ff; }
+        .cover-upload-area.dragover { border-color: var(--primary); background: #e8f2ff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+        .cover-upload-area.has-image { border-color: var(--success); background: var(--success-bg); padding: 12px; }
+        .cover-upload-area .upload-icon { font-size: 2.5rem; opacity: 0.6; }
+        .cover-upload-area .upload-text { font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; }
+        .cover-upload-area .upload-subtext { font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7; }
+        .cover-upload-area .preview-container { display: flex; align-items: center; gap: 16px; width: 100%; }
+        .cover-upload-area .preview-container img { max-width: 130px; max-height: 85px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 2px solid #fff; }
+        .cover-upload-area .preview-info { font-size: 0.8rem; color: var(--text-secondary); text-align: left; flex: 1; }
+        .cover-upload-area .preview-info .filename { font-weight: 700; color: var(--text); word-break: break-all; }
+        .cover-upload-area .remove-btn { background: var(--danger-bg); color: var(--danger); border: none; border-radius: 8px; padding: 8px 14px; font-size: 0.8rem; cursor: pointer; font-weight: 600; }
+        .btn { padding: 12px 26px; border-radius: 10px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s; }
+        .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(59,130,246,0.35); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-secondary { background: #fff; color: var(--text); border: 1.5px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--text-secondary); background: #f8fafc; }
+        .btn-success { background: var(--success); color: #fff; box-shadow: 0 2px 8px rgba(16,185,129,0.3); }
+        .btn-info { background: #0891b2; color: #fff; box-shadow: 0 2px 8px rgba(8,145,178,0.3); white-space: nowrap; }
+        .btn-info:hover { background: #0e7490; }
+        .btn[disabled] { opacity: 0.6; cursor: not-allowed; }
+        .link-row { display: flex; gap: 8px; margin-top: 12px; }
+        .link-row input { flex: 1; min-width: 0; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.82rem; font-family: var(--font-sans); color: var(--text); background: #fff; }
+        .link-row input:focus { outline: none; border-color: var(--info, #0891b2); box-shadow: 0 0 0 3px rgba(8,145,178,0.12); }
+        .link-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .link-tools .btn { padding: 7px 12px; font-size: 0.76rem; }
+        .proxy-status { margin-top: 10px; font-size: 0.74rem; padding: 7px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; }
+        .proxy-status.ok { background: #f0fdf4; color: #065f46; border: 1px solid #bbf7d0; }
+        .proxy-status.off { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+        .proxy-status button { border: none; background: transparent; color: inherit; text-decoration: underline; cursor: pointer; font-size: 0.74rem; padding: 0 2px; }
+        .src-panel { display: none; margin-top: 12px; padding: 14px; background: #fff; border: 1.5px dashed #cbd5e1; border-radius: 10px; }
+        .src-panel textarea { min-height: 120px; font-family: Consolas, Menlo, monospace; font-size: 0.72rem; }
+        .help-panel { display: none; margin-top: 12px; background: #fff7ed; border: 1.5px solid #fbbf24; border-radius: 10px; padding: 14px 16px; font-size: 0.78rem; line-height: 1.85; color: #7c2d12; }
+        .help-panel b { color: #b45309; }
+        .help-panel ol { margin: 6px 0 0 18px; padding: 0; }
+        .help-panel li { margin-bottom: 8px; }
+        .help-panel .hk { background: #fff; border: 1px solid #fed7aa; border-radius: 6px; padding: 8px 10px; margin-top: 6px; font-family: Consolas, Menlo, monospace; font-size: 0.7rem; word-break: break-all; max-height: 90px; overflow: auto; }
+        .btn-success:hover { background: #059669; }
+        .btn-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+        .output-area { font-family: var(--font-sans); font-size: 0.85rem; line-height: 1.7; white-space: pre-wrap; word-break: break-word; background: #fafbfc; border: 1.5px solid var(--border); border-radius: 10px; padding: 20px; min-height: 250px; max-height: 560px; overflow-y: auto; color: var(--text); letter-spacing: 0.01em; }
+        .output-area .cover-inline-img { max-width: 100px; max-height: 60px; border-radius: 6px; vertical-align: middle; margin-left: 6px; border: 1px solid var(--border); }
+        .output-empty { color: var(--text-secondary); font-style: italic; opacity: 0.7; display: flex; align-items: center; justify-content: center; height: 220px; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1e293b; color: #fff; padding: 14px 28px; border-radius: 12px; font-size: 0.85rem; font-weight: 500; box-shadow: 0 8px 30px rgba(0,0,0,0.25); opacity: 0; transition: all 0.35s; z-index: 9999; pointer-events: none; max-width: 90vw; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.success { background: #065f46; }
+        .toast.error { background: #991b1b; }
+        .output-area::-webkit-scrollbar { width: 8px; }
+        .output-area::-webkit-scrollbar-track { background: transparent; }
+        .output-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .output-area::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .btn-copy-main { width: 100%; justify-content: center; padding: 14px 26px; font-size: 1rem; }
+        .stage-hint { display: none; margin-top: 12px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; border-radius: 10px; padding: 10px 14px; font-size: 0.78rem; line-height: 1.8; }
+        .parse-summary { display: none; margin-top: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #065f46; border-radius: 10px; padding: 10px 14px; font-size: 0.75rem; line-height: 1.8; }
+        .parse-summary .chip { display: inline-block; background: #fff; border: 1px solid #bbf7d0; border-radius: 6px; padding: 1px 8px; margin: 2px 6px 2px 0; }
+        .parse-summary .warn { color: #b45309; font-weight: 700; }
+        .parse-summary .unknown-list { margin-top: 6px; color: var(--text-secondary); font-size: 0.72rem; }
+        .copy-sub-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .copy-sub-row .btn { padding: 9px 14px; font-size: 0.8rem; }
+        /* 口令类按钮独立成行，三色区分：开播=绿 / 关播=橙 / 自行关播后=紫 */
+        .copy-sub-row.cmd-row { margin-top: 8px; padding-top: 10px; border-top: 1px dashed var(--border); }
+        .btn-cmd-open { background: #16a34a; color: #fff; box-shadow: 0 2px 6px rgba(22,163,74,0.28); }
+        .btn-cmd-open:hover { background: #15803d; transform: translateY(-1px); }
+        .btn-cmd-close { background: #ea580c; color: #fff; box-shadow: 0 2px 6px rgba(234,88,12,0.28); }
+        .btn-cmd-close:hover { background: #c2410c; transform: translateY(-1px); }
+        .btn-cmd-self { background: #7c3aed; color: #fff; box-shadow: 0 2px 6px rgba(124,58,237,0.28); }
+        .btn-cmd-self:hover { background: #6d28d9; transform: translateY(-1px); }
+        .push-banner { position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-200%); z-index: 10001; max-width: min(760px, 94vw);
+            background: linear-gradient(135deg, #fef2f2 0%, #fff7ed 55%, #fef3c7 100%);
+            border: 3px solid #dc2626; border-left: 10px solid #dc2626; color: #7f1d1d; border-radius: 16px;
+            padding: 20px 52px 20px 22px; font-size: 1.12rem; font-weight: 800; line-height: 1.65;
+            box-shadow: 0 14px 44px rgba(220,38,38,0.45), 0 0 0 6px rgba(220,38,38,0.10);
+            transition: transform .45s cubic-bezier(.2,.8,.3,1); display: flex; align-items: center; gap: 14px; }
+        .push-banner.show { transform: translateX(-50%) translateY(0); animation: pushBannerPulse 1.5s ease-in-out 3; }
+        @keyframes pushBannerPulse { 0%,100% { box-shadow: 0 14px 44px rgba(220,38,38,0.45), 0 0 0 6px rgba(220,38,38,0.10); } 50% { box-shadow: 0 16px 52px rgba(220,38,38,0.7), 0 0 0 14px rgba(220,38,38,0.22); } }
+        .push-banner .banner-icon { font-size: 1.9rem; line-height: 1; flex: none; animation: bellShake 1.2s ease-in-out 3; }
+        @keyframes bellShake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+        .push-banner strong { display: block; font-size: 1.2rem; color: #b91c1c; letter-spacing: .5px; }
+        .push-banner .banner-sub { display: block; font-size: .86rem; font-weight: 600; color: #9a3412; margin-top: 3px; }
+        .push-banner .banner-close { position: absolute; right: 12px; top: 12px; background: none; border: none; font-size: 1.3rem; line-height: 1; color: #b91c1c; cursor: pointer; padding: 4px 10px; border-radius: 8px; }
+        .push-banner .banner-close:hover { background: rgba(180,83,9,.12); }
+        .mini-reminder { display: none; margin-top: 14px; background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1.5px solid #f59e0b; border-left: 6px solid #f59e0b; color: #92400e; border-radius: 10px; padding: 12px 16px; font-size: 0.86rem; font-weight: 600; line-height: 1.8; }
+        .zero-reminder { display: none; margin-bottom: 18px; background: linear-gradient(135deg, #fff7ed, #ffedd5); border: 1.5px solid #f97316; border-left: 6px solid #f97316; color: #9a3412; border-radius: 10px; padding: 14px 18px; font-size: 0.9rem; font-weight: 600; line-height: 1.8; }
+        .zero-reminder b { color: #c2410c; }
+        .zero-reminder.show { display: block; animation: pulseIn .3s; }
+        /* 互动开关 / 管控策略 下拉 */
+        .policy-select { position: relative; }
+        .policy-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; color: var(--text); font-size: .88rem; font-weight: 600; cursor: pointer; transition: all .2s; font-family: var(--font); }
+        .policy-btn:hover { border-color: var(--primary); }
+        .policy-btn.has-value { border-color: var(--primary); background: #f0f7ff; color: var(--primary); }
+        .policy-btn.is-close { border-color: #dc2626; background: #fef2f2; color: #b91c1c; }
+        .policy-btn .arrow { font-size: .7rem; transition: transform .2s; color: var(--text-secondary); }
+        .policy-select.open .policy-btn .arrow { transform: rotate(180deg); }
+        .policy-menu { display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 60; background: #fff; border: 1.5px solid var(--border); border-radius: 10px; box-shadow: 0 10px 28px rgba(0,0,0,.12); overflow: hidden; }
+        .policy-select.open .policy-menu { display: block; }
+        .policy-option { width: 100%; text-align: left; border: none; background: #fff; padding: 10px 14px; font-size: .85rem; font-family: var(--font); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .policy-option:hover { background: #f0f7ff; }
+        .policy-option.active { background: #eff6ff; color: var(--primary); font-weight: 700; }
+        .policy-option.danger { color: #b91c1c; border-top: 1px solid var(--border); }
+        .policy-option.danger:hover { background: #fef2f2; }
+        .policy-option .tick { width: 14px; color: var(--primary); }
+        .mini-reminder.show { display: block; animation: pulseIn .3s; }
+        @keyframes pulseIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+        @media (max-width: 480px) { .card { padding: 18px; } .account-btn { padding: 8px 14px; font-size: 0.8rem; } .btn { padding: 10px 18px; font-size: 0.82rem; } .output-area { font-size: 0.8rem; padding: 14px; } .smart-paste-area textarea { min-height: 180px; } }
+    </style>
+</head>
+<body>
+<div class="page-header">
+    <h1>📺 直播报备格式化工具</h1>
+    <span class="page-badge">智能识别 v4</span>
+    <span class="page-sub">整段粘贴 → 自动解析 → 表单确认 → 一键复制</span>
+    <span class="page-build">☁️ 2026-09-09 16:15（修复：检查结果封面碎图——SCF 平台污染 Content-Type + 函数 URL 不解码 base64，改用 base64 还原 + 魔数嗅探 + fetch→dataURL 显示）</span>
+</div>
+<div class="app-container">
+    <div class="card card-accent-blue">
+        <div class="card-header"><h2><span class="step">1</span><span>📥</span> 智能解析</h2><span class="subtitle">整段粘贴 · 自动识别</span></div>
+        <div class="form-group">
+            <label>选择直播账号 <span class="required">*</span></label>
+            <div class="account-selector" id="accountSelector">
+                <div class="account-row account-row-main">
+                    <button class="account-btn main active" data-account="央视新闻" data-url="https://live.bilibili.com/21686237">央视新闻</button>
+                    <button class="account-btn main" data-account="新华社" data-url="https://live.bilibili.com/22015508">新华社</button>
+                    <button class="account-btn main" data-account="人民日报" data-url="https://live.bilibili.com/23175826">人民日报</button>
+                </div>
+                <div class="account-row account-row-sub">
+                    <button class="account-btn" data-account="中国网直播" data-url="https://live.bilibili.com/10646312">中国网直播</button>
+                    <button class="account-btn" data-account="央视财经" data-url="https://live.bilibili.com/4268448">央视财经</button>
+                    <button class="account-btn" data-account="共青团中央" data-url="https://live.bilibili.com/54">共青团中央</button>
+                </div>
+            </div>
+        </div>
+        <div class="smart-paste-area">
+            <label><span>📥 整段粘贴智能解析</span></label>
+            <div class="paste-with-actions">
+                <textarea id="pasteInput" placeholder="支持任意顺序、任意格式，例如：&#10;【标题】××新闻发布会直播&#10;【通稿】这里是多行通稿文字…&#10;【时间】8月29日 14:00&#10;拉流地址：&#10;主:rtmp://...&#10;备:rtmp://...&#10;【推送语】××（仅备查）&#10;也支持“1、标题：…”数字序号格式；【】符号可忽略"></textarea>
+                <div class="paste-side-actions">
+                    <button class="btn btn-primary" id="parseFillBtn" type="button">✨ 解析并填充表单</button>
+                    <button class="btn btn-secondary" id="clearBtn" type="button">🔄 清空所有</button>
+                </div>
+            </div>
+            <div class="link-row">
+                <input type="text" id="linkInput" placeholder="粘贴人民日报客户端直播链接，自动识别标题 / 简介 / 封面，如 https://www.peopleapp.com/column/...">
+                <button class="btn btn-info" id="linkFetchBtn" type="button">🔗 链接识别</button>
+            </div>
+            <div class="link-tools">
+                <button class="btn btn-info" id="startProxyBtn" type="button" title="一键启动本地代理（首次需先双击「注册启动协议.vbs」注册一次）">🚀 启动本地代理</button>
+                <button class="btn btn-secondary" id="srcToggleBtn" type="button">📄 手动粘贴源码（备用）</button>
+                <button class="btn btn-secondary" id="openLinkBtn" type="button">🌐 打开该链接</button>
+                <button class="btn btn-secondary" id="retryProxyBtn" type="button">♻️ 重新检测本地代理</button>
+            </div>
+            <div class="proxy-status off" id="proxyStatus">⏳ 正在检测本地代理…</div>
+            <div class="src-panel" id="srcPanel">
+                <div style="font-size:0.76rem;color:var(--text-secondary);line-height:1.8;">
+                    在直播页面按 <b>Ctrl+U</b>（右键 → 查看网页源代码）→ <b>Ctrl+A</b> 全选 → <b>Ctrl+C</b> 复制 → 粘贴到下面 → 点解析。<br>
+                    <b>纯本机解析，不经过任何网络通道，百分百可用。</b>
+                </div>
+                <textarea id="srcInput" placeholder="在此粘贴网页源码（Ctrl+U 后全选复制的内容）…"></textarea>
+                <div class="btn-group" style="margin-top:10px;">
+                    <button class="btn btn-primary" id="srcParseBtn" type="button">✅ 解析源码并填充</button>
+                    <button class="btn btn-secondary" id="srcClearBtn" type="button">🗑️ 清空源码</button>
+                </div>
+            </div>
+            <div class="help-panel" id="linkHelpPanel"></div>
+            <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:10px;line-height:1.7;">
+                识别规则：按「标签」逐项解析——<b>时间 / 标题 / 简介（通稿）/ 推送语 / 拉流地址 / 直播间地址 / 账号</b>；<b>地址、流地址、推流地址、直播地址均归入「拉流地址」</b>；【】符号自动忽略；支持数字序号、主/备前缀；无法归类的行会单独提示，<b>不会混入简介</b>。
+            </div>
+            <div class="parse-summary" id="parseSummary"></div>
+        </div>
+        <div class="form-group">
+            <label>封面图片 <span class="required">*</span></label>
+            <div class="cover-upload-area" id="coverUploadArea">
+                <div id="coverEmptyState"><div class="upload-icon">🖼️</div><div class="upload-text">双击上传 或 Ctrl+V 粘贴封面图</div><div class="upload-subtext">支持 JPG / PNG / WebP，建议 16:9 比例，将输出到模板封面</div></div>
+                <div id="coverPreviewState" style="display:none;"><div class="preview-container"><img id="coverPreviewImg" src="" alt="封面预览"><div class="preview-info"><div class="filename" id="coverFilename">cover.jpg</div><div style="margin-top:4px;">已就绪，将用于输出模板封面</div></div><button class="remove-btn" id="removeCoverBtn" type="button">移除</button></div></div>
+                <input type="file" id="coverFileInput" accept="image/*" style="display:none;">
+            </div>
+        </div>
+    </div>
+    <div class="card card-accent-violet">
+        <div class="card-header"><h2><span class="step">2</span><span>📝</span> 信息确认与互动策略</h2><span class="subtitle">解析结果 · 可手动修改</span></div>
+        <div class="form-group">
+            <label>互动开关 / 管控策略（非必选）</label>
+            <div class="policy-select" id="policySelect">
+                <button class="policy-btn" id="policyBtn" type="button">
+                    <span id="policyLabel">不选择（输出「弹幕互动：开」）</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="policy-menu" id="policyMenu">
+                    <button class="policy-option active" type="button" data-value=""><span class="tick">✓</span>不选择（默认「弹幕互动：开」）</button>
+                    <button class="policy-option" type="button" data-value="1级禁言+词包"><span class="tick"></span>1级禁言+词包</button>
+                    <button class="policy-option" type="button" data-value="3级禁言+词包"><span class="tick"></span>3级禁言+词包</button>
+                    <button class="policy-option" type="button" data-value="5级禁言+词包"><span class="tick"></span>5级禁言+词包</button>
+                    <button class="policy-option" type="button" data-value="先审后发"><span class="tick"></span>先审后发</button>
+                    <button class="policy-option danger" type="button" data-value="关闭互动"><span class="tick"></span>关闭互动（弹幕互动、飘屏均关）</button>
+                </div>
+            </div>
+            <div class="hint">选择后输出「弹幕互动：开，所选策略」；选「关闭互动」则弹幕互动、飘屏均为关</div>
+        </div>
+        <div class="form-group">
+            <label>涉零模式</label>
+            <div class="toggle-group">
+                <button class="toggle-btn danger" id="zeroToggleBtn"><span class="indicator">✓</span><span>是否涉零（非必选）</span></button>
+                <span style="font-size:0.8rem;color:var(--text-secondary);">开启后互动、飘屏、开播分区将按涉零规则输出</span>
+            </div>
+        </div>
+        <div class="form-group"><label>直播时间</label><input type="text" id="inputTime" placeholder="如：预计14点（留空则输出「待同步」）"><div class="hint">留空将自动输出「待同步」</div></div>
+        <div class="form-group"><label>标题 <span class="required">*</span></label><input type="text" id="inputTitle" placeholder="输入直播标题"></div>
+        <div class="form-group"><label>简介（通稿） <span class="required">*</span></label><textarea id="inputBody" rows="5" placeholder="输入简介或通稿内容"></textarea></div>
+        <div class="form-group"><label>RTMP/HTTP 拉流地址（每行一个） <span class="required">*</span></label><textarea id="inputRtmp" rows="3" class="code-area" placeholder="每行一个地址（支持rtmp、http等，可带“主:”“备:”前缀）"></textarea></div>
+        <div class="form-group"><label>推送语（备查，不会在输出中显示）</label><textarea id="inputPush" rows="2" placeholder="输入推送语（可选）"></textarea></div>
+        <div class="btn-group"><button class="btn btn-primary" id="generateBtn">⚡ 生成报备模板</button></div>
+    </div>
+    <div class="card card-accent-green card-output">
+        <div class="card-header"><h2><span class="step">3</span><span>📄</span> 报备输出</h2><span class="subtitle">生成 · 一键复制富文本</span></div>
+        <div class="zero-reminder" id="zeroReminder">⚠️ 涉零模式已开启但未填写直播时间——请记得配置：<b>首黑、全公域xl、禁止上下滑</b></div>
+        <div class="output-area" id="outputArea"><div class="output-empty" id="outputEmpty">点击「生成报备模板」按钮<br>或直接修改输入后自动生成</div><div id="outputContent" style="display:none;"></div></div>
+        <div class="btn-group" style="margin-top:16px;">
+            <button class="btn btn-success btn-copy-main" id="wecomCopyBtn"><span>📄</span> 一键复制富文本（文字+封面图）</button>
+        </div>
+        <div class="stage-hint" style="display:block;">💡 富文本包含报备文字和封面图，<b>需先粘贴到微信</b>（可发给自己 / 文件传输助手）再转发到企微；若要直接粘贴企微，请用下方「复制报备文字」「复制封面图」两个按钮。</div>
+        <div class="copy-sub-row" style="margin-top:12px;">
+            <button class="btn btn-secondary" id="copyTextBtn">📝 复制报备文字</button>
+            <button class="btn btn-secondary" id="copyImgBtn">🖼️ 复制封面图</button>
+        </div>
+        <div class="copy-sub-row cmd-row">
+            <button class="btn btn-cmd-open" id="copyOpenCmdBtn">📣 开播口令</button>
+            <button class="btn btn-cmd-close" id="copyCloseCmdBtn">🔕 关播口令</button>
+            <button class="btn btn-cmd-self" id="copySelfCloseCmdBtn">⏹ 自行关播后口令</button>
+        </div>
+        <div class="mini-reminder" id="miniReminder">🔔 我是个小提醒：记得同步热点&amp;tab群、人气值下、如重点场次pcu同步</div>
+        <div style="margin-top:12px;font-size:0.75rem;color:var(--text-secondary);opacity:0.8;line-height:1.7;">
+            💡 主按钮把「报备文字 + 封面图」一并复制为富文本，企微聊天框不支持图文组合粘贴，<b>请先粘贴到微信再转发</b>；纯文字、纯图片可直接粘贴企微。建议使用 Chrome / Edge 打开本页（快捷键 Ctrl+Shift+C 复制富文本）。
+        </div>
+    </div>
+    <div class="card card-accent-orange">
+        <div class="card-header"><h2><span class="step">4</span><span>🔍</span> 直播间信息智能检查</h2><span class="subtitle">核对直播间与报备模板一致性</span></div>
+        <div class="check-bar-hint" style="font-size:0.74rem;color:var(--text-secondary);margin-bottom:12px;line-height:1.7;">
+            💡 <b>互动开/关</b>：bilibili 不向观众端返回该状态，需<b>主播后台</b>或直播间<b>目视</b>确认；本工具仅自动核对「禁言等级 / 弹幕热词」。
+        </div>
+        <div class="check-bar">
+            <button class="btn btn-primary" id="checkBtn" type="button">🔍 一键检查信息</button>
+            <span class="check-account">正在检查：<b id="checkAccountName">央视新闻</b></span>
+            <a id="checkJump" class="btn btn-jump" href="https://live.bilibili.com/21686237" target="_blank" rel="noopener">🔗 打开直播间</a>
+            <span class="check-status" id="checkStatus"></span>
+        </div>
+        <div class="check-bar" style="margin-top:-6px;">
+            <button class="btn btn-info" id="trioBtn" type="button">📺 一键检查央视三兄弟信息</button>
+            <span class="check-status" id="trioStatus"></span>
+            <button class="btn btn-collapse" id="trioCollapseBtn" type="button" style="display:none;">🔼 收起</button>
+        </div>
+        <div class="trio-result" id="trioResult" style="display:none;"></div>
+        <div class="spec-entry">
+            <div class="spec-bar">
+                <input type="text" id="specRoomInput" placeholder="粘贴直播间链接或房间号，如 https://live.bilibili.com/8178490">
+                <button class="btn btn-primary" id="specCheckBtn" type="button">🔎 检查指定直播间</button>
+                <span class="check-status" id="specStatus"></span>
+            </div>
+            <div class="spec-tpl">
+                <div class="form-group"><label>比对标题（可留空）</label><input type="text" id="specTplTitle" placeholder="留空则只展示、不比对"></div>
+                <div class="form-group"><label>比对简介（可留空）</label><textarea id="specTplBody" rows="2" placeholder="留空则只展示、不比对"></textarea></div>
+                <div class="form-group"><label>比对分区（可留空）</label><input type="text" id="specTplArea" placeholder="如：社会观察财经"></div>
+            </div>
+        </div>
+        <div class="check-bar check-bar-clear">
+            <button class="btn btn-clear" id="clearCheckBtn" type="button">🧹 清空检查信息</button>
+        </div>
+        <div class="result-divider"></div>
+        <div class="result-caption" id="checkResultCaption" style="display:none;">
+            <span class="rc-icon">📺</span>
+            <span>正在检查：<b id="checkRoomName">—</b></span>
+            <span class="rc-room" id="checkRoomNo"></span>
+        </div>
+        <div class="check-result" id="checkResult" style="display:none;">
+            <div class="check-item">
+                <div class="check-head"><span class="check-name">标题</span><span class="check-badge" id="titleBadge"></span></div>
+                <div class="check-cols">
+                    <div class="check-col"><span class="check-lbl">直播间识别</span><div class="check-val" id="liveTitle"></div></div>
+                    <div class="check-col"><span class="check-lbl">报备模板</span><div class="check-val" id="tplTitle"></div></div>
+                </div>
+            </div>
+            <div class="check-item">
+                <div class="check-head"><span class="check-name">简介</span><span class="check-badge" id="bodyBadge"></span></div>
+                <div class="check-cols">
+                    <div class="check-col"><span class="check-lbl">直播间识别</span><div class="check-val" id="liveBody"></div></div>
+                    <div class="check-col"><span class="check-lbl">报备模板</span><div class="check-val" id="tplBody"></div></div>
+                </div>
+            </div>
+            <div class="check-item">
+                <div class="check-head"><span class="check-name">封面</span><span class="check-badge" id="coverBadge"></span></div>
+                <div class="check-cols">
+                    <div class="check-col"><span class="check-lbl">直播间识别</span><div class="check-val"><img id="liveCover" class="check-cover" alt="直播间封面"></div></div>
+                    <div class="check-col"><span class="check-lbl">报备模板</span><div class="check-val" id="tplCoverWrap"></div></div>
+                </div>
+            </div>
+            <div class="check-item">
+                <div class="check-head"><span class="check-name">互动管控</span><span class="check-badge" id="interactBadge"></span></div>
+                <div class="check-cols">
+                    <div class="check-col">
+                        <span class="check-lbl">直播间识别（接口自动核对）</span>
+                        <div class="check-val" id="liveInteract">—</div>
+                    </div>
+                    <div class="check-col"><span class="check-lbl">报备模板</span><div class="check-val" id="tplInteract">—</div></div>
+                </div>
+            </div>
+            <div class="check-item">
+                <div class="check-head"><span class="check-name">直播分区</span><span class="check-badge" id="areaBadge"></span></div>
+                <div class="check-cols">
+                    <div class="check-col">
+                        <span class="check-lbl">直播间识别（接口自动核对）</span>
+                        <div class="check-val" id="liveArea">—</div>
+                    </div>
+                    <div class="check-col"><span class="check-lbl">报备模板</span><div class="check-val" id="tplArea">—</div></div>
+                </div>
+            </div>
+            <div class="check-note">⚠️ 标题 / 简介 已做规范化自动比对；<b>封面为人工核对</b>，请目视两张图是否一致；<b>直播分区</b>由接口自动核对（非时政模式比对实际分区与模板声明是否一致，时政分区需登录后台确认）；<b>互动管控</b>中「禁言等级 / 弹幕热词」由接口自动核对，<b>互动开/关</b>因 bilibili 接口不返回该状态（观众端及登录态均无），无法自动核验，请在主播后台或直播间<b>目视</b>确认。如不一致请修改直播间设置后再检查。</div>
+        </div>
+        <div class="spec-section">
+            <div class="result-caption" id="specResultCaption" style="display:none;">
+                <span class="rc-icon">📺</span>
+                <span>正在检查：<b id="specRoomName">—</b></span>
+                <span class="rc-room" id="specRoomNo"></span>
+            </div>
+            <div class="check-result" id="specResult" style="display:none;">
+                <div class="check-item">
+                    <div class="check-head"><span class="check-name">标题</span><span class="check-badge" id="specTitleBadge"></span></div>
+                    <div class="check-cols">
+                        <div class="check-col"><span class="check-lbl">直播间识别</span><div class="check-val" id="specLiveTitle"></div></div>
+                        <div class="check-col"><span class="check-lbl">比对基准</span><div class="check-val" id="specTplTitleVal"></div></div>
+                    </div>
+                </div>
+                <div class="check-item">
+                    <div class="check-head"><span class="check-name">简介</span><span class="check-badge" id="specBodyBadge"></span></div>
+                    <div class="check-cols">
+                        <div class="check-col"><span class="check-lbl">直播间识别</span><div class="check-val" id="specLiveBody"></div></div>
+                        <div class="check-col"><span class="check-lbl">比对基准</span><div class="check-val" id="specTplBodyVal"></div></div>
+                    </div>
+                </div>
+                <div class="check-item">
+                    <div class="check-head"><span class="check-name">封面</span><span class="check-badge" id="specCoverBadge"></span></div>
+                    <div class="check-cols">
+                        <div class="check-col"><span class="check-lbl">直播间封面</span><div class="check-val"><img id="specLiveCover" class="check-cover" alt="直播间封面"></div></div>
+                        <div class="check-col"><span class="check-lbl">报备模板封面</span><div class="check-val" id="specTplCoverWrap"></div></div>
+                    </div>
+                </div>
+                <div class="check-item">
+                    <div class="check-head"><span class="check-name">互动管控</span><span class="check-badge" id="specInteractBadge"></span></div>
+                    <div class="check-cols">
+                        <div class="check-col"><span class="check-lbl">直播间识别（接口自动核对）</span><div class="check-val" id="specLiveInteract">—</div></div>
+                        <div class="check-col"><span class="check-lbl">报备模板</span><div class="check-val" id="specTplInteract">—</div></div>
+                    </div>
+                </div>
+                <div class="check-item">
+                    <div class="check-head"><span class="check-name">直播分区</span><span class="check-badge" id="specAreaBadge"></span></div>
+                    <div class="check-cols">
+                        <div class="check-col"><span class="check-lbl">直播间识别（接口自动核对）</span><div class="check-val" id="specLiveArea">—</div></div>
+                        <div class="check-col"><span class="check-lbl">比对基准</span><div class="check-val" id="specTplAreaVal"></div></div>
+                    </div>
+                </div>
+                <div class="check-note">⚠️ 填写「比对基准」后会自动比对并给出 ✅/❌；留空则仅展示直播间实际信息。<b>封面为人工核对</b>，请目视两张图是否一致；互动开/关需<b>主播后台 / 目视</b>确认。</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="push-banner" id="pushBanner">
+    <span class="banner-icon">🔔</span>
+    <span>
+        <strong>⚠️ 本次直播给了推送语！</strong>
+        <span class="banner-sub">请评估是否推荐返图（本提醒不会出现在报备文本里）</span>
+    </span>
+    <button class="banner-close" id="pushBannerClose" type="button" aria-label="关闭">×</button>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function() {
+    const ACCOUNTS = {
+        '央视新闻': { label: '央视新闻', url: 'https://live.bilibili.com/21686237' },
+        '新华社': { label: '新华社', url: 'https://live.bilibili.com/22015508' },
+        '人民日报': { label: '人民日报', url: 'https://live.bilibili.com/23175826' },
+        '中国网直播': { label: '中国网直播', url: 'https://live.bilibili.com/10646312' },
+        '央视财经': { label: '央视财经', url: 'https://live.bilibili.com/4268448' },
+        '共青团中央': { label: '共青团中央', url: 'https://live.bilibili.com/54' }
+    };
+    const accountSelector = document.getElementById('accountSelector');
+    const accountBtns = accountSelector.querySelectorAll('.account-btn');
+    const inputTime = document.getElementById('inputTime');
+    const inputTitle = document.getElementById('inputTitle');
+    const inputBody = document.getElementById('inputBody');
+    const inputPush = document.getElementById('inputPush');
+    const inputRtmp = document.getElementById('inputRtmp');
+    const coverUploadArea = document.getElementById('coverUploadArea');
+    const coverEmptyState = document.getElementById('coverEmptyState');
+    const coverPreviewState = document.getElementById('coverPreviewState');
+    const coverPreviewImg = document.getElementById('coverPreviewImg');
+    const coverFilename = document.getElementById('coverFilename');
+    const coverFileInput = document.getElementById('coverFileInput');
+    const removeCoverBtn = document.getElementById('removeCoverBtn');
+    const linkInput = document.getElementById('linkInput');
+    const linkFetchBtn = document.getElementById('linkFetchBtn');
+    const srcToggleBtn = document.getElementById('srcToggleBtn');
+    const srcParseBtn = document.getElementById('srcParseBtn');
+    const srcClearBtn = document.getElementById('srcClearBtn');
+    const srcPanel = document.getElementById('srcPanel');
+    const srcInput = document.getElementById('srcInput');
+    const openLinkBtn = document.getElementById('openLinkBtn');
+    const retryProxyBtn = document.getElementById('retryProxyBtn');
+    const startProxyBtn = document.getElementById('startProxyBtn');
+    const policySelect = document.getElementById('policySelect');
+    const policyBtn = document.getElementById('policyBtn');
+    const policyMenu = document.getElementById('policyMenu');
+    const policyLabel = document.getElementById('policyLabel');
+    const policyOptions = policyMenu.querySelectorAll('.policy-option');
+    const proxyStatusEl = document.getElementById('proxyStatus');
+    const linkHelpPanel = document.getElementById('linkHelpPanel');
+    const generateBtn = document.getElementById('generateBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const outputArea = document.getElementById('outputArea');
+    const outputContent = document.getElementById('outputContent');
+    const outputEmpty = document.getElementById('outputEmpty');
+    const wecomCopyBtn = document.getElementById('wecomCopyBtn');
+    const copyTextBtn = document.getElementById('copyTextBtn');
+    const copyImgBtn = document.getElementById('copyImgBtn');
+    const copyOpenCmdBtn = document.getElementById('copyOpenCmdBtn');
+    const copyCloseCmdBtn = document.getElementById('copyCloseCmdBtn');
+    const copySelfCloseCmdBtn = document.getElementById('copySelfCloseCmdBtn');
+    const miniReminder = document.getElementById('miniReminder');
+    const pushBanner = document.getElementById('pushBanner');
+    const zeroReminder = document.getElementById('zeroReminder');
+    const pushBannerClose = document.getElementById('pushBannerClose');
+    const toast = document.getElementById('toast');
+    const pasteInput = document.getElementById('pasteInput');
+    const parseFillBtn = document.getElementById('parseFillBtn');
+    const parseSummary = document.getElementById('parseSummary');
+    // 第四板块：直播间信息智能检查
+    const checkBtn = document.getElementById('checkBtn');
+    const checkAccountName = document.getElementById('checkAccountName');
+    const checkJump = document.getElementById('checkJump');
+    const checkStatus = document.getElementById('checkStatus');
+    const checkResult = document.getElementById('checkResult');
+    const liveTitleEl = document.getElementById('liveTitle');
+    const tplTitleEl = document.getElementById('tplTitle');
+    const liveBodyEl = document.getElementById('liveBody');
+    const tplBodyEl = document.getElementById('tplBody');
+    const liveCoverEl = document.getElementById('liveCover');
+    const tplCoverWrap = document.getElementById('tplCoverWrap');
+    const titleBadge = document.getElementById('titleBadge');
+    const bodyBadge = document.getElementById('bodyBadge');
+    const coverBadge = document.getElementById('coverBadge');
+    const liveInteractEl = document.getElementById('liveInteract');
+    const tplInteractEl = document.getElementById('tplInteract');
+    const interactBadge = document.getElementById('interactBadge');
+    const liveAreaEl = document.getElementById('liveArea');
+    const tplAreaEl = document.getElementById('tplArea');
+    const areaBadge = document.getElementById('areaBadge');
+    const zeroToggleBtn = document.getElementById('zeroToggleBtn');
+    // 央视三兄弟一键检查
+    const trioBtn = document.getElementById('trioBtn');
+    const trioStatus = document.getElementById('trioStatus');
+    const trioResult = document.getElementById('trioResult');
+    const trioCollapseBtn = document.getElementById('trioCollapseBtn');
+    const clearCheckBtn = document.getElementById('clearCheckBtn');
+    // 结果区顶部的「正在检查：昵称」提示条
+    const checkResultCaption = document.getElementById('checkResultCaption');
+    const checkRoomName = document.getElementById('checkRoomName');
+    const checkRoomNo = document.getElementById('checkRoomNo');
+    const specResultCaption = document.getElementById('specResultCaption');
+    const specRoomName = document.getElementById('specRoomName');
+    const specRoomNo = document.getElementById('specRoomNo');
+    // 指定直播间检查
+    const specRoomInput = document.getElementById('specRoomInput');
+    const specCheckBtn = document.getElementById('specCheckBtn');
+    const specStatus = document.getElementById('specStatus');
+    const specResult = document.getElementById('specResult');
+    const specTplTitle = document.getElementById('specTplTitle');
+    const specTplBody = document.getElementById('specTplBody');
+    const specTplArea = document.getElementById('specTplArea');
+    const specLiveTitle = document.getElementById('specLiveTitle');
+    const specTplTitleVal = document.getElementById('specTplTitleVal');
+    const specTitleBadge = document.getElementById('specTitleBadge');
+    const specLiveBody = document.getElementById('specLiveBody');
+    const specTplBodyVal = document.getElementById('specTplBodyVal');
+    const specBodyBadge = document.getElementById('specBodyBadge');
+    const specLiveCover = document.getElementById('specLiveCover');
+    const specTplCoverWrap = document.getElementById('specTplCoverWrap');
+    const specCoverBadge = document.getElementById('specCoverBadge');
+    const specLiveInteract = document.getElementById('specLiveInteract');
+    const specTplInteract = document.getElementById('specTplInteract');
+    const specInteractBadge = document.getElementById('specInteractBadge');
+    const specLiveArea = document.getElementById('specLiveArea');
+    const specTplAreaVal = document.getElementById('specTplAreaVal');
+    const specAreaBadge = document.getElementById('specAreaBadge');
+
+    let currentAccount = '央视新闻';
+    let coverImageData = null;
+    let isZeroMode = false;
+    let interactPolicy = '';   // '' | '1级禁言+词包' | '3级禁言+词包' | '5级禁言+词包' | '先审后发' | '关闭互动'
+    let generatedPart1 = '';
+    let generatedPart2 = '';
+    let generatedFull = '';
+
+    let toastTimer = null;
+    let miniReminderTimer = null;
+
+    // ---- 推送语提醒横幅（页面最上方，醒目） ----
+    function showPushBanner() { pushBanner.classList.add('show'); }
+    function hidePushBanner() { pushBanner.classList.remove('show'); }
+    pushBannerClose.addEventListener('click', hidePushBanner);
+
+    // ---- 关播类口令小提醒（按钮下方，5 秒后或点击清空时消失） ----
+    function showMiniReminder() {
+        clearTimeout(miniReminderTimer);
+        miniReminder.classList.add('show');
+        miniReminderTimer = setTimeout(() => miniReminder.classList.remove('show'), 5000);
+    }
+    function hideMiniReminder() {
+        clearTimeout(miniReminderTimer);
+        miniReminder.classList.remove('show');
+    }
+
+    function showToast(message, type) {
+        clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.className = 'toast ' + (type || 'success');
+        void toast.offsetWidth;
+        toast.classList.add('show');
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    function selectAccount(name) {
+        if (!ACCOUNTS[name]) return;
+        currentAccount = name;
+        accountBtns.forEach(b => b.classList.toggle('active', b.dataset.account === name));
+        checkAccountName.textContent = currentAccount;          // 第四板块同步显示当前检查账号
+        if (checkJump) checkJump.href = ACCOUNTS[currentAccount].url;  // 跳转按钮指向当前账号直播间
+    }
+
+    accountBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            selectAccount(this.dataset.account);
+            generateOutput();
+        });
+    });
+
+    zeroToggleBtn.addEventListener('click', function() {
+        isZeroMode = !isZeroMode;
+        this.classList.toggle('active', isZeroMode);
+        this.querySelector('.indicator').textContent = isZeroMode ? '✓' : '';
+        generateOutput();
+        showToast(isZeroMode ? '涉零模式已开启' : '涉零模式已关闭');
+    });
+
+    // ---- 互动开关 / 管控策略 下拉 ----
+    function setInteractPolicy(value, silent) {
+        interactPolicy = value || '';
+        policyOptions.forEach(opt => {
+            const on = opt.dataset.value === interactPolicy;
+            opt.classList.toggle('active', on);
+            opt.querySelector('.tick').textContent = on ? '✓' : '';
+        });
+        policyBtn.classList.toggle('has-value', !!interactPolicy && interactPolicy !== '关闭互动');
+        policyBtn.classList.toggle('is-close', interactPolicy === '关闭互动');
+        policyLabel.textContent = interactPolicy
+            ? (interactPolicy === '关闭互动' ? '关闭互动（弹幕互动、飘屏均关）' : interactPolicy)
+            : '不选择（输出「弹幕互动：开 / 飘屏：开」）';
+        generateOutput();
+        if (!silent) {
+            showToast(interactPolicy ? ('互动策略：' + policyLabel.textContent) : '已恢复默认（弹幕互动开 / 飘屏开）');
+        }
+    }
+    policyBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        policySelect.classList.toggle('open');
+    });
+    policyOptions.forEach(opt => {
+        opt.addEventListener('click', e => {
+            e.stopPropagation();
+            setInteractPolicy(opt.dataset.value, false);
+            policySelect.classList.remove('open');
+        });
+    });
+    document.addEventListener('click', () => policySelect.classList.remove('open'));
+    // ================= 封面图：上传 / 粘贴 / 拖拽 =================
+    coverUploadArea.addEventListener('dblclick', function(e) {
+        if (e.target === removeCoverBtn || removeCoverBtn.contains(e.target)) return;
+        coverFileInput.click();
+    });
+    coverFileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) handleFile(this.files[0]);
+        this.value = '';
+    });
+    coverUploadArea.addEventListener('dragover', e => { e.preventDefault(); coverUploadArea.classList.add('dragover'); });
+    coverUploadArea.addEventListener('dragleave', e => { e.preventDefault(); coverUploadArea.classList.remove('dragover'); });
+    coverUploadArea.addEventListener('drop', e => {
+        e.preventDefault();
+        coverUploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files && files[0] && files[0].type.startsWith('image/')) handleFile(files[0]);
+    });
+    // 粘贴：任意位置粘贴图片都设为封面；若焦点在输入框则不拦截，文字照常粘贴
+    document.addEventListener('paste', function(e) {
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        let imageFile = null;
+        for (const item of items) {
+            if (item.type && item.type.indexOf('image/') === 0) {
+                const f = item.getAsFile();
+                if (f) { imageFile = f; break; }
+            }
+        }
+        if (!imageFile) {
+            const files = e.clipboardData && e.clipboardData.files;
+            if (files && files[0] && files[0].type.indexOf('image/') === 0) imageFile = files[0];
+        }
+        if (!imageFile) return;
+        const el = document.activeElement;
+        const inField = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA');
+        if (!inField) e.preventDefault();
+        handleFile(imageFile);
+        showToast(inField ? '已同时粘贴文字与封面图 ✓' : '封面图已粘贴 ✓');
+    });
+
+    function handleFile(file) {
+        const allowed = ['image/jpeg','image/png','image/webp','image/gif','image/bmp','image/svg+xml'];
+        if (!allowed.includes(file.type)) { showToast('不支持的图片格式', 'error'); return; }
+        if (file.size > 10*1024*1024) { showToast('图片过大', 'error'); return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            coverImageData = { dataUrl: e.target.result, filename: file.name || 'cover.jpg', type: file.type, size: file.size, pngBlob: null };
+            coverPreviewImg.src = coverImageData.dataUrl;
+            coverFilename.textContent = coverImageData.filename;
+            coverEmptyState.style.display = 'none';
+            coverPreviewState.style.display = 'block';
+            coverUploadArea.classList.add('has-image');
+            // 预转换 PNG blob，保证点击复制时能立即写入剪贴板
+            dataUrlToPngBlob(coverImageData.dataUrl).then(blob => { if (coverImageData) coverImageData.pngBlob = blob; });
+            generateOutput();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function dataUrlToPngBlob(dataUrl) {
+        try {
+            let blob = await (await fetch(dataUrl)).blob();
+            if (blob && blob.type === 'image/png') return blob;
+            const img = await new Promise((resolve, reject) => {
+                const i = new Image();
+                i.onload = () => resolve(i);
+                i.onerror = reject;
+                i.src = dataUrl;
+            });
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || img.width;
+            canvas.height = img.naturalHeight || img.height;
+            canvas.getContext('2d').drawImage(img, 0, 0);
+            return await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        } catch (e) { return null; }
+    }
+
+    removeCoverBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        coverImageData = null;
+        coverPreviewImg.src = '';
+        coverEmptyState.style.display = 'flex';
+        coverPreviewState.style.display = 'none';
+        coverUploadArea.classList.remove('has-image');
+        coverFileInput.value = '';
+        generateOutput();
+    });
+
+    // ================= 基础工具 =================
+    function cleanTimeInput(timeStr) { const t = (timeStr||'').trim(); return t ? t : '待同步'; }
+    function parseRtmpAddresses(text) { if (!text || !text.trim()) return []; return text.split('\n').map(l => l.trim()).filter(l => l.length > 0); }
+    function getAccountUrl() { return (ACCOUNTS[currentAccount] && ACCOUNTS[currentAccount].url) || ACCOUNTS['央视新闻'].url; }
+    function getAccountLabel() { return (ACCOUNTS[currentAccount] && ACCOUNTS[currentAccount].label) || currentAccount; }
+    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+
+    function parseTimeToHourMinute(timeStr) {
+        if (!timeStr) return null;
+        // 归一化：中文输入法极易混入全角冒号「：」和全角数字「１０」，先统一成半角再解析
+        // （否则「10：30」匹配不到冒号分支，会掉进最后的裸数字兜底，被判成 10:00）
+        const s = String(timeStr)
+            .replace(/[：﹕∶ː]/g, ':')
+            .replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
+        let hour = null, minute = 0;
+        let match = s.match(/(\d{1,2})\s*[:：]\s*(\d{1,2})/);
+        if (match) { hour = parseInt(match[1]); minute = parseInt(match[2]); }
+        else {
+            match = s.match(/(\d{1,2})\s*[点时]\s*(\d{1,2})\s*分?/);
+            if (match) { hour = parseInt(match[1]); minute = parseInt(match[2]); }
+            else {
+                match = s.match(/(\d{1,2})\s*[点时]/);
+                if (match) hour = parseInt(match[1]);
+                else { match = s.match(/\b(\d{1,2})\b/); if (match) hour = parseInt(match[1]); }
+            }
+        }
+        if (hour === null) return null;
+        if (/下午|晚上|傍晚|pm/i.test(s) && hour < 12) hour += 12;
+        if (hour < 0 || hour > 23) return null;
+        if (minute < 0 || minute > 59) minute = 0;
+        return { hour, minute };
+    }
+    // 整行即纯时间（"点/时"也算；其它中文不当纯时间）——用于识别"裸写在第一行的 13:00 / 14点"这类输入
+    function looksLikeTimeOnly(s) {
+        // 同样先归一化全角冒号/全角数字（「１０：３０」也应被认成纯时间行）
+        const t = String(s || '')
+            .replace(/[：﹕∶ː]/g, ':')
+            .replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+            .trim();
+        if (!t) return false;
+        if (/^\d{1,2}[:：]\d{1,2}$/.test(t)) return true;                 // 13:00 / 13：00
+        if (/^\d{1,2}\s*[点时]\s*\d{1,2}\s*分?$/.test(t)) return true;    // 14点30分
+        if (/^\d{1,2}\s*[点时]$/.test(t)) return true;                    // 14点
+        if (/[\u4e00-\u9fff]/.test(t)) return false; // 含其它中文（如"8月29日 14:00""直播从13:00开始"）当场次/正文处理
+        return false;
+    }
+    function generateZeroTimeRange(timeStr) {
+        const parsed = parseTimeToHourMinute(timeStr);
+        if (!parsed) return null;
+        const fmt = total => String(Math.floor(total/60)).padStart(2,'0') + ':' + String(total%60).padStart(2,'0');
+        const startTotal = Math.max(0, parsed.hour*60+parsed.minute-30);
+        const endTotal = parsed.hour*60+parsed.minute + 6*60;
+        const endStr = endTotal >= 24*60 ? '24:00' : fmt(endTotal);
+        return fmt(startTotal) + '-' + endStr;
+    }
+
+    // ================= 生成报备模板（顺序保持不变） =================
+    function generateOutput() {
+        const timeStrRaw = inputTime.value.trim();
+        const timeStr = cleanTimeInput(timeStrRaw);
+        const title = inputTitle.value.trim() || '';
+        const body = inputBody.value.trim() || '';
+        const rtmpList = parseRtmpAddresses(inputRtmp.value);
+        const accountLabel = getAccountLabel();
+        const accountUrl = getAccountUrl();
+
+        if (!title && !body && rtmpList.length === 0) {
+            outputEmpty.style.display = 'flex'; outputContent.style.display = 'none';
+            if (zeroReminder) zeroReminder.classList.remove('show');
+            generatedPart1 = generatedPart2 = generatedFull = '';
+            return;
+        }
+
+        const part1 = [];
+        part1.push('【政媒纯净模式互动管控及信息修改】（' + accountLabel + '）');
+        part1.push('直播间地址：' + accountUrl);
+        part1.push('直播时间：' + timeStr);
+        // 标题/简介/封面：空也显示标签（始终给出可手填的空行）
+        part1.push('直播间需要修改标题：' + title);
+        part1.push(body ? ('直播间需要修改简介：' + body) : '简介辛苦清空');
+        part1.push('直播间封面修改：' + (coverImageData ? coverImageData.filename : '待同步'));
+        part1.push('开播分区：' + (isZeroMode ? '时政' : '社会观察财经'));
+        // 弹幕互动：不选→「开」；关闭互动→「关」；其余策略→「开，<策略名>」（如「弹幕互动：开，1级禁言+词包」）
+        const danmuVal = (interactPolicy === '关闭互动') ? '关' : (interactPolicy ? ('开，' + interactPolicy) : '开');
+        // 飘屏：关闭互动 或 涉零 → 关，其余 → 开
+        const piaoOn = (interactPolicy === '关闭互动' || isZeroMode) ? '关' : '开';
+        part1.push('弹幕互动：' + danmuVal);
+        part1.push('飘屏：' + piaoOn);
+        part1.push('@安娜(peixi)  @阿菲(mengna02)');
+
+        // 涉零配置句：仅当涉零且能解析出直播时间段时才写进报备模板。
+        // 时间未填/认不出 → 不出现「待同步」那句，改为在「报备输出」区顶部弹提醒（见下方 zeroReminder）
+        let needZeroReminder = false;
+        if (isZeroMode) {
+            const range = generateZeroTimeRange(timeStrRaw);
+            if (range) {
+                const prefix = (interactPolicy === '关闭互动') ? '' : '先审后发、';
+                part1.push('辛苦老师配置' + range + '：' + prefix + '首黑、全公域xl、禁止上下滑');
+            } else {
+                needZeroReminder = true;
+            }
+        }
+
+        const part2 = [];
+        part2.push('【直播推拉流技术需求报备】（' + accountLabel + '）');
+        part2.push('直播间地址：' + accountUrl);
+        part2.push('时间：' + timeStr);
+        part2.push('拉流地址：');
+        rtmpList.forEach(addr => part2.push(addr));
+
+        generatedPart1 = part1.join('\n');
+        generatedPart2 = part2.join('\n');
+        generatedFull = generatedPart1 + '\n\n' + generatedPart2;
+
+        const htmlLines = [];
+        part1.forEach(line => {
+            if (line.startsWith('直播间封面修改：') && coverImageData) {
+                htmlLines.push('直播间封面修改：<img src="' + coverImageData.dataUrl + '" class="cover-inline-img" alt="封面">');
+            } else {
+                htmlLines.push(escapeHtml(line));
+            }
+        });
+        htmlLines.push('<hr class="section-divider" style="border:none;border-top:1px solid #e2e8f0;margin:14px 0;">');
+        part2.forEach(line => htmlLines.push(escapeHtml(line)));
+
+        outputContent.innerHTML = htmlLines.join('<br>');
+        outputEmpty.style.display = 'none';
+        outputContent.style.display = 'block';
+
+        // 涉零未填时间 → 报备输出区顶部提醒（不写进模板）
+        if (needZeroReminder && zeroReminder) zeroReminder.classList.add('show');
+        else if (zeroReminder) zeroReminder.classList.remove('show');
+    }
+    // ================= 智能解析引擎 v2：按标签逐项解析 =================
+    // 序号/项目符号前缀：仅当后面跟 、.．,，)） 等分隔符时才剥离，避免误伤“10月1日”
+    const NUMBERING_RE = /^\s*(?:[\d一二三四五六七八九十]+\s*[、.．,，)）]+|[（(][\d一二三四五六七八九十]+[)）]\s+|[•*●○◆▪·]\s*|[-–—]\s+)/;
+    // URL 识别（含 rtmp/rtsp/srt/http 等），停止于空白与中英文标点
+    const URL_TOKEN_RE = /(?:rtmp|rtsp|srt|https?|mms|udp|flv):\/\/[^\s，,、；;！!）)】」』"']+/i;
+    const MARKED_URL_G = /(?:主|备|一|二|三|四|1|2|3|4)?\s*[：:]?\s*(?:rtmp|rtsp|srt|https?|mms|udp|flv):\/\/[^\s，,、；;！!）)】」』"']+/gi;
+    const ROOM_RE = /(?:live\.bilibili\.com|bilibili\.com\/live)\/(\d+)/i;
+    const STREAM_SCHEME_RE = /^(?:rtmp|rtsp|srt|mms|udp|flv):\/\//i;
+    const DANGLING_RE = /^[\s,，、;；.。·:：\-–—*•●○◆▪主备一二三四五六七八九十\d]*$/;
+
+    // 标签别名（【】等符号已归一化后精确匹配）
+    const ALIAS_MAP = {};
+    (function buildAliasMap() {
+        const groups = {
+            time: ['时间','直播时间','开播时间','预计时间','预计开播','时间安排','直播时间安排','档期','开始时间','直播日期','日期时间','时间点','开播时刻','直播时段'],
+            title: ['标题','直播标题','直播主题','主题','题目','名称','直播名称','场次','场次名称','直播场次','标题内容'],
+            body: ['简介','通稿','直播简介','内容','直播内容','介绍','内容简介','正文','文案','通稿内容','概要','详情','说明','直播介绍','文案内容','直播详情','稿件','稿件内容'],
+            push: ['推送语','推送','推送文案','转发语','导语','宣推语','推广语','发布语','播发语','推送内容'],
+            rtmp: ['拉流地址','拉流','流地址','地址','直播地址','推流地址','推流','播放地址','源地址','流链接','直播流','码流地址','视频流','视频流地址','拉流链接','推拉流地址','推拉流','拉流url','流url','地址一','地址二','主地址','备地址'],
+            room: ['直播间地址','直播间链接','直播间','房间地址','房间链接','直播间号','房间号','直播间id'],
+            account: ['账号','直播账号','b站账号','哔哩哔哩账号','up主','频道','直播频道','账号名称'],
+            cover: ['封面','封面图','直播封面','封面图片']
+        };
+        for (const f in groups) groups[f].forEach(a => { ALIAS_MAP[normLabel(a)] = f; });
+    })();
+
+    // 别名精确匹配失败后，按包含关系识别（顺序即优先级）
+    const CONTAIN_RULES = [
+        ['push', /推送|转发语|导语|宣推|推广语|发布语|播发语/],
+        ['time', /时间|档期|开播时刻|日期/],
+        ['title', /标题|主题|题目|名称|场次/],
+        ['body', /简介|通稿|介绍|内容|正文|文案|概要|详情|说明|稿件/],
+        ['room', /直播间|房间/],
+        ['rtmp', /拉流|推流|流地址|地址|播放地址|码流|流链接|直播流|视频流|源地址/],
+        ['account', /账号|up主|频道|主播/],
+        ['cover', /封面/]
+    ];
+
+    function normLabel(s) {
+        return String(s || '').replace(/[【】\[\]（）(){}　\s·、，,：:；;。]/g, '').trim();
+    }
+    function mapLabel(label) {
+        const n = normLabel(label);
+        if (!n || n.length > 12) return null;
+        if (ALIAS_MAP[n]) return ALIAS_MAP[n];
+        for (let i = 0; i < CONTAIN_RULES.length; i++) {
+            if (CONTAIN_RULES[i][1].test(n)) return CONTAIN_RULES[i][0];
+        }
+        return null;
+    }
+
+    // 从一行文本中提取「标签 + 值」
+    function extractLabel(line) {
+        let s = (line || '').trim();
+        if (!s) return null;
+        s = s.replace(NUMBERING_RE, '').trim();
+        if (!s) return null;
+        if (looksLikeTimeOnly(s)) return null; // 整行即纯时间（如"13:00"）不当成"标签：值"，交给时间字段逻辑
+        // 【标签】值 形式（【】符号可忽略）
+        let m = s.match(/^【([^【】]+)】\s*(.*)$/);
+        if (m) {
+            const inner = m[1].trim();
+            const rest = m[2].trim();
+            const innerLbl = inner.match(/^([^：:]{1,12})[：:]\s*(.*)$/);
+            if (innerLbl && mapLabel(innerLbl[1].trim()) !== null) return { label: innerLbl[1].trim(), value: innerLbl[2].trim() };
+            if (mapLabel(inner) !== null) return { label: inner, value: rest };
+            return null; // 括号内不是已知标签，整行按普通文本处理
+        }
+        // 标签：值 形式
+        m = s.match(/^([^：:]{1,12})\s*[：:]\s*(.*)$/);
+        if (m && !/^[a-z]+:\/\//i.test(m[1])) {
+            const label = m[1].trim();
+            if (label) return { label: label, value: m[2].trim() };
+        }
+        // 独立标签行（无冒号）：“拉流地址” “简介” “推送语”
+        if (s.length <= 12 && mapLabel(s) !== null) return { label: s, value: '' };
+        return null;
+    }
+
+    // 从正文末尾剥离「下一段标签」（如【通稿】…【地址】 / …地址：），返回 { text, field }
+    function extractTrailingSection(val) {
+        const s = (val || '').trimEnd();
+        if (!s) return null;
+        let m = s.match(/【([^【】]{1,12})】\s*$/);
+        if (m) {
+            const f = mapLabel(m[1].trim());
+            if (f && f !== 'body') return { text: s.slice(0, m.index).trim(), field: f };
+            return null;
+        }
+        m = s.match(/(拉流地址|流地址|推流地址|直播地址|播放地址|源地址|地址|直播间地址|直播间链接|直播间|房间地址|房间链接|推送语|推送|标题|时间|封面|账号)\s*[：:]\s*$/);
+        if (m) {
+            const f = mapLabel(m[1]);
+            if (f) return { text: s.slice(0, m.index).trim(), field: f };
+        }
+        return null;
+    }
+
+    // 正文"行内任何位置"剥离【已知字段标签】——取最后一个非 body 标签后切，
+    // 返回 { text, field, tail }。用于消除「…最新情况。【地址】」仍留在简介里的 bug。
+    function splitBodyByInlineLabels(val) {
+        const s = (val || '');
+        if (!s) return null;
+        const re = /【([^【】]{1,12})】/g;
+        let lastIdx = -1, lastName = null, lastField = null, m;
+        while ((m = re.exec(s)) !== null) {
+            const f = mapLabel(m[1].trim());
+            if (f && f !== 'body') { lastIdx = m.index; lastName = m[1].trim(); lastField = f; }
+        }
+        if (lastIdx < 0) return null;
+        const before = s.slice(0, lastIdx).trimEnd();
+        const tail = s.slice(lastIdx + (lastName ? lastName.length + 2 : 0)).trim();
+        return { text: before, field: lastField, tail: tail };
+    }
+
+    // 兜底：扫描字段值正文中所有【已知字段标签】（【地址】【标题】【时间】【推送语】【拉流地址】…），
+    // 把每个标签之后的尾段解析成流地址 / 其它字段，附加到对应输出。
+    // 防止浏览器缓存、异常输入或解析漏判时「【地址】」仍粘连在简介里。
+    function cleanFieldOfInlineLabels(text, extraRtmpOut, kind /* 'body' | 'push' */) {
+        const arr = String(text || '').split(/\r?\n/);
+        const out = [];
+        let i = 0;
+        while (i < arr.length) {
+            let line = arr[i];
+            const split = splitBodyByInlineLabels(line);
+            // 只要识别到了字段就处理（tail 可能为空，像「末尾【地址】」）
+            if (split && split.field) {
+                const field = split.field;
+                const tail = split.tail;
+                if (tail) {
+                    tail.split(/\r?\n/).forEach(t => {
+                        const u = t.trim();
+                        if (!u) return;
+                        if (/^(?:rtmp|rtsp|srt|https?|mms|udp|flv):\/\//i.test(u) && field === 'rtmp') {
+                            if (extraRtmpOut) extraRtmpOut.push(u);
+                        }
+                    });
+                }
+                // 末尾【地址】/【拉流地址】等：紧跟的下一行若就是裸 rtmp 流地址，也吸出
+                if (field === 'rtmp' && i + 1 < arr.length) {
+                    const next = arr[i + 1].trim();
+                    if (/^(?:rtmp|rtsp|srt|https?|mms|udp|flv):\/\//i.test(next)) {
+                        if (extraRtmpOut) extraRtmpOut.push(next);
+                        i++;
+                    }
+                }
+                line = split.text;
+            }
+            out.push(line);
+            i++;
+        }
+        return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    }
+
+    function smartParse(raw) {
+        const st = { time: [], title: [], body: [], push: [], account: [], rtmp: [], roomIds: [], unknown: [], current: null };
+        const lines = String(raw || '').split(/\r?\n/);
+        for (const rawLine of lines) {
+            let line = rawLine.replace(/\u00a0/g, ' ').trim();
+            if (!line) {
+                if (st.current === 'body' || st.current === 'push') st[st.current].push('');
+                continue;
+            }
+            // 模板段头（整份模板回贴再解析场景）直接跳过，不混入简介、不计未识别
+            if (/^【?\s*(?:政媒纯净模式|直播推拉流技术需求报备)/.test(line)) { st.current = null; continue; }
+
+            // ---------- 第一步：URL 提取（地址/流地址/拉流地址 → 拉流地址项） ----------
+            const tokens = line.match(MARKED_URL_G);
+            let leftover = line;
+            let consumedAsAddress = false;
+            if (tokens) {
+                for (const tok of tokens) {
+                    const url = tok.match(URL_TOKEN_RE)[0];
+                    const idx = leftover.indexOf(tok);
+                    const before = idx > 0 ? leftover.slice(0, idx) : '';
+                    const roomM = url.match(ROOM_RE);
+                    const lblInfo = before.trim() ? extractLabel(before) : null;
+                    const fieldBefore = lblInfo ? mapLabel(lblInfo.label) : null;
+                    const beforeClean = before.replace(NUMBERING_RE, '').trim();
+                    const atStart = beforeClean === '' || DANGLING_RE.test(beforeClean);
+                    if (roomM) {
+                        // B站直播间链接 → 记录房间号用于自动匹配账号，不计入拉流地址
+                        st.roomIds.push(roomM[1]);
+                        if (fieldBefore === 'rtmp' || fieldBefore === 'room' || atStart) {
+                            leftover = leftover.replace(tok, ' ');
+                            consumedAsAddress = true;
+                        }
+                    } else if (STREAM_SCHEME_RE.test(url) || fieldBefore === 'rtmp' || atStart) {
+                        // 流协议地址、带地址类标签的链接、行首独立链接 → 拉流地址
+                        st.rtmp.push(tok.trim().replace(/^[：:，,、;；\s]+/, ''));
+                        leftover = leftover.replace(tok, ' ');
+                        consumedAsAddress = true;
+                    }
+                }
+                leftover = leftover.replace(/\s{2,}/g, ' ').trim();
+                // 去掉残留的地址类标签前缀（如“【地址】”“拉流地址：”“主:”）
+                if (consumedAsAddress && leftover) {
+                    const li = extractLabel(leftover);
+                    if (li && (mapLabel(li.label) === 'rtmp' || mapLabel(li.label) === 'room')) leftover = li.value.trim();
+                }
+                // 残留无中文且很短（如 main/bak/主/备等前缀）时视为已消费的前缀，丢弃
+                if (DANGLING_RE.test(leftover) || (consumedAsAddress && leftover && !/[\u4e00-\u9fff]/.test(leftover) && leftover.length <= 10)) leftover = '';
+                if (!leftover) { st.current = null; continue; }
+            }
+
+            // ---------- 第二步：标签解析 ----------
+            const li = extractLabel(leftover);
+            if (li) {
+                const field = mapLabel(li.label);
+                if (field) {
+                    let val = li.value;
+                    const wrap = val.match(/^【(.+)】$/);
+                    if (wrap) val = wrap[1].trim();
+                    if (field === 'rtmp') {
+                        if (val && /(?:rtmp|rtsp|srt|https?|mms|udp|flv):\/\//i.test(val)) st.rtmp.push(val);
+                        else if (val) st.unknown.push(line);
+                        st.current = null;
+                    } else if (field === 'room') {
+                        const rid = val.match(/\d{3,}/);
+                        if (rid) st.roomIds.push(rid[0]);
+                        st.current = null;
+                    } else if (field === 'cover') {
+                        st.current = null; // 封面以上传的图片为准，文字忽略
+                    } else {
+                        // 正文末尾紧跟「下一段标签」（如【通稿】…【地址】）时，切出去并切换字段
+                        let nextField = field;
+                        let v = val;
+                        if (field === 'body' || field === 'push') {
+                            const trailing = extractTrailingSection(v);
+                            if (trailing) {
+                                if (trailing.text) st[field].push(trailing.text);
+                                nextField = trailing.field;
+                                v = ''; // 已消费，不再重复 push
+                            }
+                        }
+                        st.current = nextField;
+                        if (v) {
+                            if ((field === 'time' || field === 'title') && st[field].join(' ').indexOf(v) > -1) {
+                                // 模板回贴等场景出现的重复项，跳过
+                            } else {
+                                st[field].push(v);
+                            }
+                        }
+                    }
+                } else {
+                    st.unknown.push(line); // 未知标签独立成项，绝不混入简介
+                    st.current = null;
+                }
+            } else if (st.current) {
+                st[st.current].push(leftover); // 多行续行归属当前字段
+            } else if (looksLikeTimeOnly(leftover)) {
+                st.time.push(leftover); // 裸写在第一行的纯时间（如"13:00"）自动归为直播时间
+            } else {
+                st.unknown.push(line);
+            }
+        }
+        return st;
+    }
+
+    function joinField(arr, sep) {
+        return arr.join(sep).replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    }
+    // ================= 解析并填充表单 =================
+    function parseAndFill() {
+        const rawText = pasteInput.value.trim();
+        if (!rawText) { showToast('请先粘贴直播信息', 'error'); return; }
+
+        const st = smartParse(rawText);
+        const time = joinField(st.time, ' ');
+        const title = joinField(st.title, ' ');
+        const body = joinField(st.body, '\n');
+        const push = joinField(st.push, '\n');
+        const accountText = joinField(st.account, ' ');
+
+        // 兜底清理（防止浏览器缓存或异常输入导致【地址】仍留在简介里）：
+        // 把简介里任何位置的「【已知字段标签】（含【地址】【拉流地址】【流地址】…）」剥离，
+        // 它后面的内容若是 rtmp/http 流地址 → 追加到 inputRtmp；其它则丢弃
+        const extraRtmp = [];
+        const cleanedBody = cleanFieldOfInlineLabels(body, extraRtmp);
+
+        inputTime.value = time;
+        inputTitle.value = title;
+        inputBody.value = cleanedBody;
+        inputPush.value = push;
+        const rtmpCombined = st.rtmp.concat(extraRtmp).filter(Boolean);
+        inputRtmp.value = rtmpCombined.join('\n');
+
+        // 推送语兜底清理（与简介同理）
+        const extraRtmpFromPush = [];
+        inputPush.value = cleanFieldOfInlineLabels(push, extraRtmpFromPush, 'push');
+        if (extraRtmpFromPush.length) {
+            rtmpCombined.push(...extraRtmpFromPush.filter(Boolean));
+            inputRtmp.value = (rtmpCombined.filter(Boolean)).join('\n');
+        }
+
+        // 推送语提醒：本次解析检测到推送语 → 页面最上方弹出醒目横幅
+        if (st.push.length) showPushBanner(); else hidePushBanner();
+
+        // 账号自动匹配：优先明示“账号：××”，其次直播间房间号
+        let chosen = null;
+        if (accountText) {
+            const a = accountText.replace(/\s/g, '');
+            chosen = Object.keys(ACCOUNTS).find(k => k === a) || Object.keys(ACCOUNTS).find(k => k.indexOf(a) > -1 || a.indexOf(k) > -1);
+        }
+        if (!chosen && st.roomIds.length) {
+            for (const rid of st.roomIds) {
+                const k = Object.keys(ACCOUNTS).find(key => ACCOUNTS[key].url.endsWith('/' + rid));
+                if (k) { chosen = k; break; }
+            }
+        }
+        if (chosen && chosen !== currentAccount) selectAccount(chosen);
+
+        // 解析摘要（识别了什么、哪些行未归类）
+        const chips = [];
+        if (time) chips.push('时间 ✓');
+        if (title) chips.push('标题 ✓');
+        if (body) chips.push('简介 ✓（' + body.replace(/\n/g, '').length + ' 字）');
+        if (st.rtmp.length) chips.push('拉流地址 ×' + st.rtmp.length);
+        if (push) chips.push('推送语 ✓（仅备查）');
+        if (chosen) chips.push('账号 → ' + chosen);
+        let unknownHtml = '';
+        if (st.unknown.length) {
+            chips.push('<span class="warn">未识别 ' + st.unknown.length + ' 行</span>');
+            const preview = st.unknown.slice(0, 6).map(escapeHtml).join('；').slice(0, 160);
+            unknownHtml = '<div class="unknown-list">未归类行（不会混入简介）：' + preview + (st.unknown.length > 6 ? ' 等' : '') + '</div>';
+        }
+        if (chips.length) {
+            parseSummary.innerHTML = chips.map(c => '<span class="chip">' + c + '</span>').join('') + unknownHtml;
+            parseSummary.style.display = 'block';
+        } else {
+            parseSummary.style.display = 'none';
+        }
+
+        generateOutput();
+        if (!time && !title && !body && !st.rtmp.length) {
+            showToast('未识别到有效字段，请检查粘贴内容的格式', 'error');
+        } else {
+            showToast('✅ 解析成功' + (st.unknown.length ? '（' + st.unknown.length + ' 行未归类，已隔离、未混入简介）' : '') + (chosen ? '，已匹配账号：' + chosen : ''));
+        }
+    }
+
+    parseFillBtn.addEventListener('click', parseAndFill);
+    pasteInput.addEventListener('keydown', e => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); parseAndFill(); }
+    });
+    [inputTime, inputTitle, inputBody, inputRtmp].forEach(el => {
+        el.addEventListener('input', generateOutput);
+        el.addEventListener('change', generateOutput);
+    });
+
+    generateBtn.addEventListener('click', () => {
+        generateOutput();
+        if (generatedFull) { showToast('✅ 模板已生成'); outputArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+        else showToast('请先填写必要信息', 'error');
+    });
+
+    // ================= 链接识别：抓取网页 → 提取标题 / 简介 / 封面 =================
+    const UI_IMG_RE = /(_nuxt|static|assets|logo|icon|avatar|no-?message|default-|placeholder|sprite|qrcode|favicon|loading|blank|\.svg)/i;
+
+    function normalizeUrl(raw) {
+        let u = (raw || '').trim().replace(/["'<>]/g, '');
+        if (!u) return '';
+        if (!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, '');
+        return u;
+    }
+    // 本地代理（双击「启动本地代理.bat」后可用）：不依赖任何第三方公共代理，最稳定
+    const LOCAL_PORTS = [8787, 8788, 8789, 8790, 8791]; // 端口被占用时服务会自动顺延
+    let LOCAL_PROXY = 'http://127.0.0.1:8787';
+    let localProxyOK = false;
+    // 云端模式：页面由云端 Python 服务托管，同域 /proxy 即为转发代理，无需本机代理
+    const isCloud = (location.protocol === 'http:' || location.protocol === 'https:')
+        && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1' && location.hostname !== '';
+    // 云端后端（云函数）地址。两种部署形态都支持：
+    //   · 留空 ''  → 页面和后端同域（例如页面直接由云函数托管），走 location.origin
+    //   · 填完整地址 → 页面放静态托管（COS / Pages），后端单独放云函数，跨域调用。
+    //     跨域可行是因为后端响应带 Access-Control-Allow-Origin: *（已在函数 URL 的 CORS 里开启）
+    const CLOUD_API_BASE = 'https://1484187363-fm85zrpjed.ap-guangzhou.tencentscf.com'; // 已配置：EdgeOne 页面跨域调 SCF 后端
+    function apiBase() { return (CLOUD_API_BASE || location.origin).replace(/\/+$/, ''); }
+    window.CLOUD_API_BASE = CLOUD_API_BASE; // 暴露给页面末尾的心跳脚本
+    function proxyUrl(u) {
+        // 云端统一走「根路径 + api 参数」，不再依赖 /proxy 子路径。
+        // 原因：腾讯云函数只配一条 "/" 规则最省事，子路径忘了配就会 404。
+        if (isCloud) return apiBase() + '/?api=proxy&url=' + encodeURIComponent(u);
+        return LOCAL_PROXY + '/?url=' + encodeURIComponent(u);
+    }
+    // 跨域抓取：本机代理 → 直连 → 多个公共代理兜底（任一可用即可）；allorigins /get 返回 JSON 包裹需解包
+    const FETCH_PLANS = [
+        { type: 'html', build: u => proxyUrl(u) },
+        { type: 'html', build: u => u },
+        { type: 'html', build: u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u), unwrap: true },
+        { type: 'html', build: u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u) },
+        { type: 'html', build: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u) },
+        { type: 'html', build: u => 'https://corsproxy.io/?url=' + encodeURIComponent(u) },
+        { type: 'md', build: u => 'https://r.jina.ai/' + u }
+    ];
+    // 前端 fetch 超时统一 ≥ live_proxy.py 内的 urlopen 超时（现 18 秒），
+    // 这样代理内部能跑完，浏览器不会提前 abort。当前各处超时：
+    //   fetchPageText         25000（链接识别）
+    //   fetchBiliRoom         25000（直播间信息）
+    //   fetchAnchorName       15000（主播昵称）
+    //   fetchImageDataUrl     25000（封面图）
+    //   probeLocalProxy (/ping) 2500（本机探测必须快）
+    async function fetchWithTimeout(url, ms) {
+        const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timer = ctrl ? setTimeout(() => ctrl.abort(), ms) : null;
+        try {
+            return await fetch(url, { redirect: 'follow', cache: 'no-store', signal: ctrl ? ctrl.signal : undefined });
+        } finally { if (timer) clearTimeout(timer); }
+    }
+    // validate：传入校验回调（用解析结果验证），验证通过的通道才算成功；全部失败时返回第一个非空结果兜底
+    async function fetchPageText(url, validate) {
+        let lastErr = null, firstNonEmpty = null;
+        for (const plan of FETCH_PLANS) {
+            try {
+                const res = await fetchWithTimeout(plan.build(url), 25000);
+                if (!res.ok) { lastErr = new Error('HTTP ' + res.status); continue; }
+                let text = await res.text();
+                if (plan.unwrap) { try { const d = JSON.parse(text); text = (d && d.contents) || ''; } catch (e) { text = ''; } }
+                if (!text || text.length <= 100) { lastErr = new Error('返回内容为空'); continue; }
+                const candidate = { type: plan.type, text: text };
+                if (!validate || validate(candidate)) return candidate;
+                if (!firstNonEmpty) firstNonEmpty = candidate;
+                lastErr = new Error('返回内容无法解析');
+            } catch (e) { lastErr = e; }
+        }
+        if (firstNonEmpty) return firstNonEmpty;
+        throw lastErr || new Error('网络或跨域限制');
+    }
+    function metaContent(doc, selector) {
+        try {
+            const el = doc.querySelector(selector);
+            if (!el) return '';
+            return (el.getAttribute('content') || el.getAttribute('value') || '').trim();
+        } catch (e) { return ''; }
+    }
+    function cleanTitle(t) {
+        t = (t || '').replace(/\s+/g, ' ').trim();
+        if (!t) return '';
+        // 去掉结尾的媒体站点后缀（xxx_人民日报 / xxx - 人民日报 / xxx｜人民日报），只去尾部，标题内部的 ｜ | 分隔保留
+        t = t.replace(/[\s_·]+人民日报客户端$/, '').replace(/[\s_·]+人民日报$/, '')
+             .replace(/\s*[-–—]\s*人民日报(客户端)?$/, '').replace(/\s*[|｜]\s*人民日报(客户端)?$/, '')
+             .trim();
+        // 通用下划线站点后缀：xxx_网易（下划线几乎不出现在直播标题内部）
+        const m = t.match(/^(.{4,})_\s*([\u4e00-\u9fa5A-Za-z][\u4e00-\u9fa5A-Za-z0-9]{0,11})$/);
+        if (m && m[2].length <= 12) t = m[1].trim();
+        // " - 站点名" 结尾且右侧像媒体名：xxx - 央视新闻
+        const m2 = t.match(/^(.{6,})\s+[-–—]\s+([\u4e00-\u9fa5A-Za-z]{2,8})$/);
+        if (m2 && /日报|晚报|新闻|人民|新华|央视|中央|在线|客户端|网|台|TV|News/i.test(m2[2])) t = m2[1].trim();
+        return t;
+    }
+    function pickBySelectors(doc, selectors, minLen) {
+        for (const sel of selectors) {
+            try {
+                const els = Array.prototype.slice.call(doc.querySelectorAll(sel));
+                for (const el of els) {
+                    const txt = (el.textContent || '').replace(/\s+/g, ' ').trim();
+                    if (txt.length >= minLen) return txt;
+                }
+            } catch (e) { /* 选择器不合法则跳过 */ }
+        }
+        return '';
+    }
+    function extractCoverFromDocument(doc, baseUrl) {
+        const raw = [
+            metaContent(doc, 'meta[property="og:image"]'),
+            metaContent(doc, 'meta[property="og:image:url"]'),
+            metaContent(doc, 'meta[name="twitter:image"]'),
+            metaContent(doc, 'meta[itemprop="image"]'),
+            metaContent(doc, 'meta[name="image"]')
+        ].find(v => v && !UI_IMG_RE.test(v));
+        if (raw) return raw;
+        const link = doc.querySelector('link[rel="image_src"]');
+        if (link && link.getAttribute('href')) return link.getAttribute('href');
+        // JSON-LD
+        const lds = Array.prototype.slice.call(doc.querySelectorAll('script[type="application/ld+json"]'));
+        for (const s of lds) {
+            try {
+                const data = JSON.parse(s.textContent);
+                const arr = Array.isArray(data) ? data : [data];
+                for (const d of arr) {
+                    const img = d && (d.image || d.thumbnailUrl);
+                    const val = Array.isArray(img) ? img[0] : img;
+                    const u = (val && typeof val === 'object') ? val.url : val;
+                    if (typeof u === 'string' && u && !UI_IMG_RE.test(u)) return u;
+                }
+            } catch (e) { /* JSON 解析失败忽略 */ }
+        }
+        // 正文大图
+        const imgs = Array.prototype.slice.call(doc.querySelectorAll('article img, main img, .article-content img, .content img, .live-info img, .cover img, img'));
+        for (const img of imgs) {
+            const src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-original') || '';
+            if (!src || UI_IMG_RE.test(src) || /^data:/i.test(src)) continue;
+            const w = parseInt(img.getAttribute('width') || '0', 10);
+            if (w && w < 200) continue;
+            return src;
+        }
+        return '';
+    }
+    function extractCoverFromRaw(html) {
+        const patterns = [
+            /"(?:url|cover|coverUrl|coverImg|sharePosterCoverUrl|poster|picUrl|imgUrl|thumbnailUrl)"\s*:\s*"(https?:[^"]+?\.(?:jpg|jpeg|png|webp)[^"]*)"/gi,
+            /(https?:\/\/[^"'\s<>()]+?\.(?:jpg|jpeg|png|webp)(?:\?[^"'\s<>]*)?)/gi
+        ];
+        for (const re of patterns) {
+            let m;
+            while ((m = re.exec(html))) {
+                const u = m[1];
+                if (!u || UI_IMG_RE.test(u)) continue;
+                if (/(120|w_\d{1,2})\b/.test(u) && /resize/.test(u)) continue; // 跳过小尺寸缩略图
+                return u;
+            }
+        }
+        return '';
+    }
+    function absoluteUrl(u, baseUrl) {
+        try { return new URL(u, baseUrl).href; } catch (e) { return u; }
+    }
+    function parseLinkHtml(html, baseUrl) {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        // 标题
+        let title = metaContent(doc, 'meta[property="og:title"]') || metaContent(doc, 'meta[name="twitter:title"]') || metaContent(doc, 'meta[itemprop="name"]');
+        if (!title) {
+            const tEl = doc.querySelector('title');
+            title = cleanTitle(tEl ? tEl.textContent : '');
+        }
+        if (!title) title = pickBySelectors(doc, ['h1', '.live-info .title', '.title', '.article-title', '.news-title'], 4);
+        // 简介（标题下面的一段文字）
+        let desc = metaContent(doc, 'meta[property="og:description"]') || metaContent(doc, 'meta[name="description"]') || metaContent(doc, 'meta[itemprop="description"]');
+        if (!desc) desc = pickBySelectors(doc, ['.live-info .desc', '.desc', '.article-desc', '.summary', '.abstract', '.intro', '.subtitle', '.article-content p', '.content p', 'article p', 'main p'], 10);
+        if (!desc) {
+            const m = html.match(/"(?:desc|description|summary|shareSummary|brief)"\s*:\s*"([^"]{10,})"/);
+            if (m) desc = m[1];
+        }
+        // 封面
+        let cover = extractCoverFromDocument(doc, baseUrl);
+        if (!cover) cover = extractCoverFromRaw(html);
+        if (cover) cover = absoluteUrl(cover.replace(/&amp;/g, '&'), baseUrl);
+        return { title: (title || '').trim(), desc: (desc || '').trim(), cover: cover || '' };
+    }
+    // Markdown 通道（r.jina.ai）兜底解析
+    function parseMarkdown(md, baseUrl) {
+        const lines = (md || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        let title = '', desc = '', cover = '';
+        for (const l of lines) {
+            if (!title) {
+                const m = l.match(/^#{1,3}\s*(.+?)\s*$/);
+                if (m) { title = cleanTitle(m[1]); continue; }
+            }
+            if (!desc && l.length >= 20 && !/^[#>!\[\-\*|]/.test(l) && !/^\d+[.、)]\s/.test(l) && !/^!\[/.test(l) && !/^(?:https?:\/\/|Title:|URL Source:|Markdown Content:)/i.test(l)) desc = l;
+            if (!cover) {
+                const m = l.match(/!\[[^\]]*\]\((https?:[^)\s]+)\)/);
+                if (m && !UI_IMG_RE.test(m[1])) cover = m[1];
+            }
+        }
+        if (!cover) {
+            const m = (md || '').match(/(https?:\/\/[^\s)"]+?\.(?:jpg|jpeg|png|webp)[^\s)"]*)/i);
+            if (m && !UI_IMG_RE.test(m[1])) cover = m[1];
+        }
+        return { title: title.trim(), desc: desc.trim(), cover: cover ? absoluteUrl(cover, baseUrl) : '' };
+    }
+    function blobToDataUrl(blob) {
+        return new Promise((resolve, reject) => {
+            const fr = new FileReader();
+            fr.onload = () => resolve(fr.result);
+            fr.onerror = () => reject(fr.error || new Error('读取图片失败'));
+            fr.readAsDataURL(blob);
+        });
+    }
+    // 魔数嗅探：SCF 函数 URL 平台会强插 Content-Type: application/json 在最前，
+    // 浏览器按响应头判断"不是图片"会拒绝渲染/解析。不信任响应头，直接看文件头字节。
+    function sniffImageType(buf) {
+        try {
+            const b = new Uint8Array(buf.slice(0, 16));
+            if (b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF) return 'image/jpeg';
+            if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47) return 'image/png';
+            if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) return 'image/gif';
+            if (b[0] === 0x52 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return 'image/webp';
+        } catch (e) { /* ignore */ }
+        return '';
+    }
+    // SCF 函数 URL 不解码 isBase64Encoded 响应（API 网关会解，函数 URL 不会），
+    // 图片会以 base64 文本（"/9j/4AAQ..."、"iVBORw0KGgo..."）形式到达 → 检测并还原成真二进制
+    function maybeBase64Image(buf) {
+        try {
+            const head8 = new Uint8Array(buf.slice(0, 16));
+            let head = '';
+            for (let i = 0; i < head8.length; i++) {
+                if (head8[i] < 32 || head8[i] > 126) return null; // 含非 ASCII 字节 = 不是 base64 文本
+                head += String.fromCharCode(head8[i]);
+            }
+            let mime = '';
+            if (head.indexOf('/9j/') === 0) mime = 'image/jpeg';
+            else if (head.indexOf('iVBORw0KGgo') === 0) mime = 'image/png';
+            else if (head.indexOf('R0lGOD') === 0) mime = 'image/gif';
+            else if (head.indexOf('UklGR') === 0) mime = 'image/webp';
+            if (!mime) return null;
+            const u = new Uint8Array(buf);
+            let s = '';
+            for (let i = 0; i < u.length; i++) s += String.fromCharCode(u[i]);
+            const bin = atob(s);
+            const out = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+            return { buf: out.buffer, type: mime };
+        } catch (e) { return null; }
+    }
+    async function fetchImageDataUrl(url) {
+        const host = url.replace(/^https?:\/\//i, '');
+        const plans = [
+            url,
+            proxyUrl(url),
+            'https://images.weserv.nl/?url=' + encodeURIComponent(host) + '&output=jpg',
+            'https://wsrv.nl/?url=' + encodeURIComponent(host) + '&output=jpg',
+            'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+            'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)
+        ];
+        for (const p of plans) {
+            try {
+                const res = await fetchWithTimeout(p, 25000);
+                if (!res.ok) continue;
+                let type = (res.headers && res.headers.get) ? (res.headers.get('content-type') || '') : '';
+                if (type.indexOf(',') !== -1) type = ''; // 多个 Content-Type 被逗号合并（SCF 平台头），不可信，走魔数嗅探
+                type = type.split(';')[0].trim();
+                let buf = await res.arrayBuffer();
+                if (!buf || buf.byteLength < 2048) continue;
+                const b64 = maybeBase64Image(buf); // SCF base64 文本还原
+                if (b64) { buf = b64.buf; type = b64.type; }
+                if (!type || !/^image\//i.test(type)) {
+                    type = sniffImageType(buf);
+                    if (!type) continue; // 真不是图片（代理返回的 403/HTML 错误页等），换下一个方案
+                }
+                const blob = new Blob([buf], { type: type });
+                const dataUrl = await blobToDataUrl(blob);
+                if (dataUrl && dataUrl.length > 100) return { dataUrl, size: buf.byteLength, type: type };
+            } catch (e) { /* 换下一个方案（含超时） */ }
+        }
+        return null;
+    }
+    function coverNameFromUrl(url) {
+        try {
+            const path = new URL(url).pathname;
+            const name = decodeURIComponent(path.split('/').pop() || '');
+            if (/\.(jpe?g|png|webp|gif)$/i.test(name)) return name.slice(0, 60);
+        } catch (e) { /* ignore */ }
+        return 'cover.jpg';
+    }
+
+    // 封面下载（独立，失败不影响标题/简介）
+    async function applyCover(coverUrl) {
+        if (!coverUrl) return false;
+        const img = await fetchImageDataUrl(coverUrl);
+        if (!img) return false;
+        coverImageData = { dataUrl: img.dataUrl, filename: coverNameFromUrl(coverUrl), type: img.type, size: img.size, pngBlob: null };
+        coverPreviewImg.src = img.dataUrl;
+        coverFilename.textContent = coverImageData.filename;
+        coverEmptyState.style.display = 'none';
+        coverPreviewState.style.display = 'block';
+        coverUploadArea.classList.add('has-image');
+        generateOutput();
+        return true;
+    }
+    // 统一的填充逻辑：链接识别 / 剪贴板导入 / 源码解析 共用
+    async function fillFromInfo(info, originLabel) {
+        const got = [];
+        if (info.title) { inputTitle.value = info.title; got.push('标题'); }
+        if (info.desc) { inputBody.value = info.desc; got.push('简介'); }
+        generateOutput();
+        if (!got.length) {
+            showToast('未识别到标题/简介/封面，请手动填写或换用其他方案', 'error');
+            return got;
+        }
+        hideLinkHelp();
+        showToast('✅ ' + (originLabel || '已识别') + '：' + got.join('、') + '（封面图后台下载中…）');
+        // 封面不阻塞：图片通道慢/被墙时，标题和简介先到手
+        applyCover(info.cover).then(ok => {
+            if (ok) showToast('✅ ' + (originLabel || '已识别') + '：' + got.join('、') + '、封面');
+        });
+        return got;
+    }
+    let linkFetching = false;
+    async function recognizeLink() {
+        const url = normalizeUrl(linkInput.value);
+        if (!url || !/^https?:\/\/.+\..+/i.test(url)) {
+            showToast('请先粘贴人民日报客户端直播链接', 'error'); linkInput.focus(); return;
+        }
+        if (linkFetching) return;
+        linkFetching = true;
+        const originText = linkFetchBtn.innerHTML;
+        linkFetchBtn.disabled = true; linkFetchBtn.innerHTML = '⏳ 识别中…';
+        try {
+            const fetched = await fetchPageText(url, c => {
+                const r = c.type === 'md' ? parseMarkdown(c.text, url) : parseLinkHtml(c.text, url);
+                const n = [r.title, r.desc, r.cover].filter(v => v && v.trim()).length;
+                return n >= 2; // 标题/简介/封面至少解析到 2 项才算该通道有效
+            });
+            const info = fetched.type === 'md' ? parseMarkdown(fetched.text, url) : parseLinkHtml(fetched.text, url);
+            await fillFromInfo(info, '已识别并填充');
+        } catch (e) {
+            showToast('在线通道不可达，请看下方橙色帮助里的 3 种替代方案', 'error');
+            showLinkHelp(url);
+        } finally {
+            linkFetching = false;
+            linkFetchBtn.disabled = false; linkFetchBtn.innerHTML = originText;
+        }
+    }
+    linkFetchBtn.addEventListener('click', recognizeLink);
+    linkInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); recognizeLink(); } });
+
+    // ================= 链接识别三大替代方案 =================
+    // 本地代理状态检测
+    // 需要服务端通道的功能：链接识别 / 一键检查 / 三兄弟 / 专项检查
+    // 纯静态托管（GitHub Pages、COS 等无后端环境）下这些必然失败，
+    // 与其让用户点了才报 "Failed to fetch"，不如直接禁用并说明原因。
+    const NETWORK_BTN_IDS = ['linkFetchBtn', 'checkBtn', 'trioBtn', 'specCheckBtn'];
+    function setNetworkFeatures(enabled) {
+        NETWORK_BTN_IDS.forEach(id => {
+            const b = document.getElementById(id);
+            if (!b) return;
+            b.disabled = !enabled;
+            if (enabled) {
+                b.style.opacity = '';
+                b.style.cursor = '';
+                b.removeAttribute('title');
+            } else {
+                b.style.opacity = '.45';
+                b.style.cursor = 'not-allowed';
+                b.title = '当前为纯静态版，无服务端通道，此功能不可用（可用「手动粘贴源码」离线解析）';
+            }
+        });
+    }
+    async function probeLocalProxy(manual) {
+        if (isCloud) {
+            // 云端也必须真探测：纯静态托管（GitHub Pages / COS）没有 Python 后端，
+            // /ping 会 404。此时必须降级，否则点了核对会请求不存在的 /proxy。
+            const _sp = document.getElementById('startProxyBtn');
+            const _rp = document.getElementById('retryProxyBtn');
+            if (_sp) _sp.style.display = 'none';
+            if (_rp) _rp.style.display = 'none';
+            proxyStatusEl.innerHTML = '⏳ 正在检测云端通道…';
+            proxyStatusEl.className = 'proxy-status off';
+            localProxyOK = false;
+            try {
+                const res = await fetchWithTimeout(apiBase() + '/?api=ping&t=' + Date.now(), 8000);
+                if (res && res.ok) {
+                    const txt = await res.text();
+                    // 必须校验内容而不是只看 HTTP 200：纯静态托管下 "/?api=ping"
+                    // 会把 index.html 原样返回（同样是 200），只有真后端才返回纯文本 OK。
+                    if (txt.trim() === 'OK') {
+                        localProxyOK = true;
+                        LOCAL_PROXY = apiBase() + '/?api=proxy';
+                    }
+                }
+            } catch (e) { /* 无后端即视为纯静态版 */ }
+            if (localProxyOK) {
+                proxyStatusEl.innerHTML = '☁️ 云端通道已连接 —— 链接识别与一键核对均走云端通道，无需本机代理';
+                proxyStatusEl.className = 'proxy-status ok';
+                setNetworkFeatures(true);
+                if (manual) showToast('☁️ 云端通道已连接');
+            } else {
+                proxyStatusEl.innerHTML = '📄 <b>纯静态版（无服务端）</b> —— 解析、生成报备、一键复制<b>全部可用</b>；<br>链接识别与一键核对需要服务端通道，此版本不可用。需要核对请用本地安装包，或用「📄 手动粘贴源码」离线解析。';
+                proxyStatusEl.className = 'proxy-status off';
+                setNetworkFeatures(false);
+                if (manual) showToast('当前为纯静态版，核对功能不可用', 'error');
+            }
+            return;
+        }
+        proxyStatusEl.innerHTML = '⏳ 正在检测本地代理（8787-8791）…';
+        proxyStatusEl.className = 'proxy-status off';
+        localProxyOK = false;
+        LOCAL_PROXY = 'http://127.0.0.1:' + LOCAL_PORTS[0];
+        const tried = [];
+        for (const port of LOCAL_PORTS) {
+            const base = 'http://127.0.0.1:' + port;
+            let status = 'fail';
+            let startedAt = Date.now();
+            try {
+                const res = await fetchWithTimeout(base + '/ping', 2500);
+                const ms = Date.now() - startedAt;
+                if (res && res.ok) {
+                    localProxyOK = true;
+                    LOCAL_PROXY = base;
+                    status = 'ok ' + ms + 'ms';
+                    tried.push({ p: port, s: status });
+                    break;
+                } else {
+                    status = 'HTTP ' + (res ? res.status : '?');
+                }
+            } catch (e) {
+                status = '超时';
+            }
+            tried.push({ p: port, s: status });
+        }
+        if (localProxyOK) {
+            proxyStatusEl.innerHTML = '✅ 本地代理已连接（端口 ' + LOCAL_PROXY.split(':').pop() + '）—— 链接识别走本机通道，稳定可用';
+            proxyStatusEl.className = 'proxy-status ok';
+            if (manual) showToast('✅ 本地代理已连接（端口 ' + LOCAL_PROXY.split(':').pop() + '），可直接使用');
+        } else {
+            const detail = tried.map(t => t.p + '·' + t.s).join(' ');
+            const allTimeout = tried.every(t => t.s === '超时');
+            const extra = allTimeout
+                ? '<br><span style="color:#b45309;">⚡ 全是超时（不是"拒绝连接"）：浏览器到 127.0.0.1 的连接被拦了。可能是公司电脑装了安全软件、或浏览器策略禁止 localhost。换 Edge/Chrome 重试，或用「手动粘贴源码」。</span>'
+                : '';
+            proxyStatusEl.innerHTML = '⚠️ 未检测到本地代理 —— 已扫：<b style="font-family:Consolas,monospace;">' + detail + '</b><br>请确认已双击「<b>后台静默启动.vbs</b>」（或「诊断启动问题.vbs」），会有一个黑窗口（就是代理本体）保持开着别关。或用「📄 手动粘贴源码」方案。' + extra;
+            proxyStatusEl.className = 'proxy-status off';
+            if (manual) showToast('未检测到本地代理，请先启动代理再点此按钮', 'error');
+        }
+    }
+    function hideLinkHelp() { linkHelpPanel.style.display = 'none'; }
+    function showLinkHelp() {
+        linkHelpPanel.innerHTML =
+            '<b>⚠️ 所有在线通道都不可达（公司网络屏蔽了第三方代理）</b>' +
+            '<ol>' +
+            '<li><b>方案 1（推荐）：启动本地代理。</b>双击工具同目录的「<b>后台静默启动.vbs</b>」，会弹出提示告诉你启动成功（点「确定」关闭），然后会有一个黑窗口（就是代理本体）<b>保持开着别关</b>。回到本页点「♻️ 重新检测本地代理」看到绿色提示即可。' +
+            '<div style="margin-top:4px;color:#92400e;">想开机自动启动：双击「<b>开机自动启动.vbs</b>」一次即可，以后重启都不用管。</div></li>' +
+            '<li><b>方案 2（纯离线 · 一定可用）：</b>点「🌐 打开该链接」→ 在直播页面按 <b>Ctrl+U</b>（或右键“查看网页源代码”）→ <b>Ctrl+A</b> 全选 → <b>Ctrl+C</b> 复制 → 回本页点「📄 手动粘贴源码」，粘贴后点「✅ 解析源码并填充」。</li>' +
+            '</ol>';
+        linkHelpPanel.style.display = 'block';
+    }
+    retryProxyBtn.addEventListener('click', () => probeLocalProxy(true));
+    startProxyBtn.addEventListener('click', () => {
+        // 通过自定义协议 liveproxy:// 拉起「启动代理_协议.vbs」（浏览器出于安全不能直接跑本地程序）
+        showToast('正在启动本地代理…（浏览器若弹确认框，点「打开」）');
+        window.location.href = 'liveproxy://start';
+        let tries = 0;
+        const pollTimer = setInterval(async () => {
+            tries++;
+            await probeLocalProxy(false);
+            if (localProxyOK) {
+                clearInterval(pollTimer);
+                showToast('✅ 本地代理已启动，可直接使用');
+            } else if (tries >= 40) {
+                clearInterval(pollTimer);
+                showToast('迟迟没检测到代理：①若浏览器没弹确认框，先双击「注册启动协议.vbs」注册一次再点按钮；②仍不行就双击「诊断启动问题.bat」并保持黑窗口开着；③或直接在工具里用「手动粘贴源码」', 'error');
+            }
+        }, 1500);
+    });
+    openLinkBtn.addEventListener('click', () => {
+        const u = normalizeUrl(linkInput.value);
+        if (u && /^https?:\/\/.+\..+/i.test(u)) window.open(u, '_blank');
+        else { showToast('请先粘贴人民日报客户端直播链接', 'error'); linkInput.focus(); }
+    });
+    srcToggleBtn.addEventListener('click', () => {
+        const open = srcPanel.style.display === 'block';
+        srcPanel.style.display = open ? 'none' : 'block';
+        if (!open) srcInput.focus();
+    });
+    srcClearBtn.addEventListener('click', () => { srcInput.value = ''; });
+    srcParseBtn.addEventListener('click', async () => {
+        const src = (srcInput.value || '').trim();
+        if (src.length < 200) { showToast('请先粘贴网页源码（直播页面 Ctrl+U 后全选复制）', 'error'); return; }
+        const base = normalizeUrl(linkInput.value) || 'https://www.peopleapp.com/';
+        let info = parseLinkHtml(src, base);
+        if (!info.title && !info.desc) info = parseMarkdown(src.replace(/<[^>]+>/g, '\n'), base);
+        await fillFromInfo(info, '源码解析完成');
+    });
+    probeLocalProxy(false);
+
+    clearBtn.addEventListener('click', () => {
+        inputTime.value=''; inputTitle.value=''; inputBody.value=''; inputPush.value=''; inputRtmp.value='';
+        pasteInput.value=''; linkInput.value=''; coverImageData=null; coverPreviewImg.src=''; coverEmptyState.style.display='flex'; coverPreviewState.style.display='none'; coverUploadArea.classList.remove('has-image'); coverFileInput.value='';
+        isZeroMode=false; zeroToggleBtn.classList.remove('active'); zeroToggleBtn.querySelector('.indicator').textContent='';
+        setInteractPolicy('', true); policySelect.classList.remove('open');
+        outputEmpty.style.display='flex'; outputContent.style.display='none'; generatedPart1=generatedPart2=generatedFull='';
+        parseSummary.style.display='none';
+        hidePushBanner(); hideMiniReminder(); hideLinkHelp();
+        srcInput.value=''; srcPanel.style.display='none';
+        selectAccount('央视新闻');
+        showToast('已清空所有内容');
+    });
+    // ================= 剪贴板：真实图片写入（企微可用） =================
+    async function copyPlainText(text) {
+        if (!text) return false;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); return true; }
+        } catch (e) { console.warn('writeText 失败', e); }
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed'; ta.style.left = '-9999px'; ta.style.top = '0';
+            document.body.appendChild(ta);
+            ta.focus(); ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok;
+        } catch (e) { return false; }
+    }
+
+    async function writeImageToClipboard() {
+        if (!coverImageData) return false;
+        let blob = coverImageData.pngBlob;
+        if (!blob) {
+            blob = await dataUrlToPngBlob(coverImageData.dataUrl);
+            if (coverImageData) coverImageData.pngBlob = blob;
+        }
+        if (!blob) return false;
+        if (navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem !== 'undefined') {
+            try {
+                if (ClipboardItem.supports && !ClipboardItem.supports('image/png')) return false;
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                return true;
+            } catch (e) { console.warn('图片写入剪贴板失败', e); }
+        }
+        return false;
+    }
+
+    function downloadCover() {
+        if (!coverImageData) return;
+        const a = document.createElement('a');
+        a.href = coverImageData.dataUrl;
+        a.download = (coverImageData.filename || 'cover').replace(/\.[^.]+$/, '') + '.png';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    // 富文本复制（文字 + 内嵌封面，适合腾讯文档 / Word 等富文本编辑器）
+    function buildCopyHtml() {
+        let html = generatedFull.replace(/\n/g, '<br>');
+        if (coverImageData) {
+            const coverLine = '直播间封面修改：<img src="' + coverImageData.dataUrl + '" style="max-width:100px;max-height:60px;vertical-align:middle;">';
+            html = html.replace('直播间封面修改：' + coverImageData.filename, coverLine);
+        }
+        return '<div>' + html + '</div>';
+    }
+    async function copyRichToClipboard(text, htmlContent, successMsg) {
+        if (!text) { showToast('暂无可复制的内容，请先生成', 'error'); return; }
+        if (htmlContent && navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem !== 'undefined') {
+            try {
+                const items = { 'text/plain': new Blob([text], { type: 'text/plain' }), 'text/html': new Blob([htmlContent], { type: 'text/html' }) };
+                await navigator.clipboard.write([new ClipboardItem(items)]);
+                showToast(successMsg || '✅ 已复制（含文字和图片）');
+                return;
+            } catch (err) { console.warn('Clipboard API 写入失败，回退 execCommand', err); }
+        }
+        if (htmlContent) {
+            try {
+                const container = document.createElement('div');
+                container.innerHTML = htmlContent;
+                container.style.position = 'fixed'; container.style.left = '-9999px'; container.style.top = '0';
+                document.body.appendChild(container);
+                const range = document.createRange(); range.selectNodeContents(container);
+                const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
+                const success = document.execCommand('copy');
+                document.body.removeChild(container); selection.removeAllRanges();
+                if (success) { showToast(successMsg || '✅ 已复制（富文本）'); return; }
+            } catch (e) { console.warn('execCommand 富文本复制失败', e); }
+        }
+        const ok = await copyPlainText(text);
+        showToast(ok ? '✅ 已复制（纯文本）' : '复制失败，请手动选择输出内容复制', ok ? 'success' : 'error');
+    }
+
+    // ---- 主按钮：一键复制富文本（文字+封面图），粘贴到微信后转发 ----
+    wecomCopyBtn.addEventListener('click', () => {
+        if (!generatedFull) { showToast('请先生成报备模板', 'error'); return; }
+        copyRichToClipboard(generatedFull, buildCopyHtml(), '✅ 富文本已复制（文字+封面图），请先粘贴到微信再转发');
+    });
+    copyTextBtn.addEventListener('click', async () => {
+        if (!generatedFull) { showToast('请先生成报备模板', 'error'); return; }
+        const ok = await copyPlainText(generatedFull);
+        showToast(ok ? '✅ 报备文字已复制，可粘贴到企微' : '复制失败，请手动选择输出内容复制', ok ? 'success' : 'error');
+    });
+    copyImgBtn.addEventListener('click', async () => {
+        if (!coverImageData) { showToast('请先上传封面图', 'error'); return; }
+        const ok = await writeImageToClipboard();
+        if (ok) showToast('✅ 封面图已复制，可粘贴到企微');
+        else { downloadCover(); showToast('当前浏览器不支持复制图片，已自动下载封面图', 'error'); }
+    });
+    copyOpenCmdBtn.addEventListener('click', async () => {
+        const ok = await copyPlainText('辛苦老师开播开互动');
+        showToast(ok ? '✅ 开播口令已复制' : '复制失败', ok ? 'success' : 'error');
+    });
+    copyCloseCmdBtn.addEventListener('click', async () => {
+        const ok = await copyPlainText('辛苦老师关播、关互动清屏');
+        showToast(ok ? '✅ 关播口令已复制' : '复制失败', ok ? 'success' : 'error');
+        showMiniReminder();
+    });
+    copySelfCloseCmdBtn.addEventListener('click', async () => {
+        const ok = await copyPlainText('媒体自行关播，辛苦断流、清屏、关互动');
+        showToast(ok ? '✅ 自行关播后口令已复制' : '复制失败', ok ? 'success' : 'error');
+        showMiniReminder();
+    });
+
+    // ================= 快捷键 =================
+    document.addEventListener('keydown', e => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            if (document.activeElement === pasteInput) { e.preventDefault(); parseAndFill(); }
+            else { e.preventDefault(); generateOutput(); if (generatedFull) showToast('✅ 模板已生成'); }
+        }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+            e.preventDefault(); wecomCopyBtn.click();
+        }
+    });
+
+    function init() {
+        selectAccount('央视新闻');
+        isZeroMode = false; zeroToggleBtn.classList.remove('active'); zeroToggleBtn.querySelector('.indicator').textContent = '';
+        setInteractPolicy('', true); policySelect.classList.remove('open');
+        inputTime.value=''; inputTitle.value=''; inputBody.value=''; inputPush.value=''; inputRtmp.value='';
+        pasteInput.value=''; coverImageData=null; coverPreviewImg.src=''; coverEmptyState.style.display='flex'; coverPreviewState.style.display='none'; coverUploadArea.classList.remove('has-image');
+        outputEmpty.style.display='flex'; outputContent.style.display='none'; generatedPart1=generatedPart2=generatedFull='';
+        parseSummary.style.display='none';
+    }
+    init();
+
+    window.__liveReportTool = {
+        generate: generateOutput,
+        parseAndFill: parseAndFill,
+        smartParse: smartParse,
+        toggleZero: () => zeroToggleBtn.click(),
+        setInteractPolicy: (v) => setInteractPolicy(v, true),
+        getState: () => ({ currentAccount, isZeroMode, interactPolicy, coverImageData, generatedFull }),
+        setAccount: (name) => { if (ACCOUNTS[name]) { selectAccount(name); generateOutput(); } }
+    };
+
+    // ================= 第四板块：直播间信息智能检查 =================
+    function extractRoomId(url) {
+        const m = (url || '').match(/live\.bilibili\.com\/(\d+)/);
+        return m ? m[1] : '';
+    }
+    // 规范化：去空白、去常见标点，便于模糊比对
+    function normText(s) {
+        return (s || '').replace(/\s+/g, ' ')
+            .replace(/[，。、；：:！!？?""''（）()【】\[\]《》<>…—\-_~·]/g, '')
+            .trim();
+    }
+    function setBadge(el, type, text) {
+        el.className = 'check-badge ' + type;
+        el.textContent = text;
+    }
+    // 通过本地代理（兜底公共代理）调用 bilibili get_info，返回 {title, description, user_cover}
+    async function fetchBiliRoom(roomId) {
+        const api = 'https://api.live.bilibili.com/room/v1/Room/get_info?room_id=' + encodeURIComponent(roomId);
+        const plans = [
+            proxyUrl(api),
+            api,
+            'https://api.allorigins.win/raw?url=' + encodeURIComponent(api),
+            'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(api)
+        ];
+        let lastErr = null;
+        for (const url of plans) {
+            try {
+                const res = await fetchWithTimeout(url, 25000);
+                if (!res.ok) { lastErr = new Error('HTTP ' + res.status); continue; }
+                const text = await res.text();
+                if (!text) { lastErr = new Error('返回为空'); continue; }
+                const d = JSON.parse(text);
+                if (d && d.code === 0 && d.data) return d.data;
+                lastErr = new Error('接口返回异常（code ' + (d && d.code) + '）');
+            } catch (e) { lastErr = e; }
+        }
+        throw lastErr || new Error('无法获取直播间信息');
+    }
+    // （已移除扫码登录：互动开/关 观众端接口不返回，登录对检查无实际作用）
+
+    // ---------- 结果区显隐：三个检查互斥，同时只展示一个 ----------
+    // ⚠️ checkResult / specResult 内部结构是静态 HTML（含大量 id 元素），
+    // 只能隐藏 display，**绝不能清空 innerHTML**，否则 JS 里缓存的元素引用会失效。
+    // trioResult 内容是动态生成的，可以安全清空。
+    function hideResult(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    }
+    function clearTrioResult() {
+        trioResult.innerHTML = '';
+        trioResult.style.display = 'none';
+        trioCollapseBtn.style.display = 'none';
+    }
+    function resetStatus(el) {
+        if (el) { el.textContent = ''; el.className = 'check-status'; }
+    }
+    // get_info 不返回主播昵称（uname 为空），需用 uid 二次查询；失败不影响主流程
+    async function fetchAnchorName(uid) {
+        if (!uid) return '';
+        try {
+            const api = 'https://api.bilibili.com/x/web-interface/card?mid=' + encodeURIComponent(uid) + '&photo=false';
+            const plans = [proxyUrl(api), api];
+            for (let i = 0; i < plans.length; i++) {
+                try {
+                    const res = await fetchWithTimeout(plans[i], 15000);
+                    if (!res || !res.ok) continue;
+                    const d = JSON.parse(await res.text());
+                    const card = (d && d.data && d.data.card) ? d.data.card : null;
+                    if (card && card.name) return card.name;
+                } catch (e) { /* 换下一个通道 */ }
+            }
+        } catch (e) {}
+        return '';
+    }
+    // 设置结果区顶部的「正在检查：昵称」提示条
+    function setResultCaption(capEl, nameEl, noEl, roomId, anchorName, fallbackLabel) {
+        if (!capEl || !nameEl) return;
+        const label = anchorName || fallbackLabel || '';
+        nameEl.textContent = label || ('房间号 ' + roomId);
+        // 昵称本身已退化成「房间号 X」时，右侧不再重复显示房间号
+        if (noEl) noEl.textContent = (label && roomId) ? ('房间号 ' + roomId) : '';
+        capEl.style.display = 'flex';
+    }
+    // 只保留指定结果区，其余收起（互斥展示）
+    function showOnlyResult(keep) {
+        if (keep !== 'trio') clearTrioResult();
+        if (keep !== 'check') { hideResult('checkResult'); hideResult('checkResultCaption'); }
+        if (keep !== 'spec') { hideResult('specResult'); hideResult('specResultCaption'); }
+    }
+    function clearAllChecks() {
+        hideResult('checkResult');
+        hideResult('checkResultCaption');
+        hideResult('specResult');
+        hideResult('specResultCaption');
+        clearTrioResult();
+        resetStatus(checkStatus);
+        resetStatus(trioStatus);
+        resetStatus(specStatus);
+        showToast('🧹 已清空检查结果', 'success');
+    }
+    clearCheckBtn.addEventListener('click', clearAllChecks);
+
+    // ---------- 通用检查渲染：主检查 / 指定直播间检查 共用 ----------
+    // m：元素映射；tpl：比对基准（title / body / area 留空则只展示不比对）
+    function renderChecks(m, data, tpl) {
+        const N = normText;
+        const liveTitle = (data.title || '').trim();
+        const liveDesc = (data.description || '').trim();
+        const liveCover = data.user_cover || data.cover || data.keyframe || '';
+        const tTitle = (tpl.title || '').trim();
+        const tBody = (tpl.body || '').trim();
+        const tArea = (tpl.area || '').trim();
+        // 标题
+        m.liveTitle.textContent = liveTitle || '（空）';
+        m.tplTitle.textContent = tTitle || '（未填写）';
+        if (!tTitle) setBadge(m.titleBadge, 'manual', '— 未比对');
+        else setBadge(m.titleBadge, N(liveTitle) === N(tTitle) ? 'match' : 'mismatch',
+            N(liveTitle) === N(tTitle) ? '✅ 一致' : '❌ 不一致');
+        // 简介
+        m.liveBody.textContent = liveDesc || '（空）';
+        m.tplBody.textContent = tBody || '（未填写）';
+        if (!tBody) setBadge(m.bodyBadge, 'manual', '— 未比对');
+        else setBadge(m.bodyBadge, N(liveDesc) === N(tBody) ? 'match' : 'mismatch',
+            N(liveDesc) === N(tBody) ? '✅ 一致' : '❌ 不一致');
+        // 封面：人工核对（展示两张图）
+        if (liveCover) {
+            m.liveCover.style.display = 'block';
+            m.liveCover.alt = '直播间封面';
+            // 回退不能直接把 <img> 指到 SCF 代理：平台强插的 Content-Type: application/json 会让浏览器拒绝渲染（碎图）。
+            // 改为 fetch 成 dataURL 再显示（fetch 不受 Content-Disposition/Content-Type 影响）。
+            m.liveCover.onerror = function () {
+                this.onerror = null;
+                fetchImageDataUrl(liveCover).then(function (r) { if (r && r.dataUrl) m.liveCover.src = r.dataUrl; });
+            };
+            m.liveCover.src = liveCover;
+        } else {
+            m.liveCover.style.display = 'none';
+            m.liveCover.alt = '（未获取到封面）';
+        }
+        m.tplCoverWrap.innerHTML = '';
+        if (tpl.coverDataUrl) {
+            const img = document.createElement('img');
+            img.className = 'check-cover';
+            img.src = tpl.coverDataUrl;
+            m.tplCoverWrap.appendChild(img);
+            if (tpl.coverFilename) {
+                const cap = document.createElement('div');
+                cap.style.cssText = 'margin-top:6px;font-size:0.78rem;color:var(--text-secondary);';
+                cap.textContent = tpl.coverFilename;
+                m.tplCoverWrap.appendChild(cap);
+            }
+        } else {
+            const tip = document.createElement('div');
+            tip.style.cssText = 'font-size:0.82rem;color:var(--text-secondary);';
+            tip.textContent = '（模板未上传封面）';
+            m.tplCoverWrap.appendChild(tip);
+        }
+        setBadge(m.coverBadge, 'manual', '🔍 需人工核对');
+        // 互动管控：禁言等级 / 弹幕热词由接口自动核对；互动开/关 bilibili 不返回该状态
+        const silentLevel = parseInt(data.room_silent_level, 10) || 0;
+        const hotOn = data.hot_words_status === 1 || data.hot_words_status === '1';
+        m.tplInteract.textContent = tpl.interactPolicy ? tpl.interactPolicy : '弹幕互动：开（无特殊管控）';
+        m.liveInteract.innerHTML = '禁言等级：<b>Lv' + silentLevel + '</b><br>弹幕热词：<b>' + (hotOn ? '开' : '关') + '</b>' +
+            '<div style="font-size:0.74rem;color:var(--text-secondary);margin-top:4px;">互动开/关：bilibili 接口<b>不返回</b>该状态，请在<b>主播后台</b>或直播间<b>目视</b>确认。</div>';
+        setBadge(m.interactBadge, 'manual', '🔍 需主播后台/目视核对');
+        // 直播分区
+        const parentArea = data.parent_area_name || '';
+        const areaName = data.area_name || '';
+        const areaId = data.area_id != null ? data.area_id : '';
+        m.liveArea.innerHTML = (parentArea ? parentArea + ' / ' : '') + areaName +
+            (areaId !== '' ? ' <span style="font-size:0.74rem;color:var(--text-secondary);">（ID:' + areaId + '）</span>' : '');
+        m.tplArea.textContent = tArea || '（未填写）';
+        if (!tArea) setBadge(m.areaBadge, 'manual', '— 未比对');
+        else if (tpl.zeroMode) setBadge(m.areaBadge, 'manual', '🔍 需人工核对');
+        else setBadge(m.areaBadge, N(areaName) === N(tArea) ? 'match' : 'mismatch',
+            N(areaName) === N(tArea) ? '✅ 一致' : '❌ 不一致');
+    }
+    const MAIN_MAP = {
+        liveTitle: liveTitleEl, tplTitle: tplTitleEl, titleBadge: titleBadge,
+        liveBody: liveBodyEl, tplBody: tplBodyEl, bodyBadge: bodyBadge,
+        liveCover: liveCoverEl, tplCoverWrap: tplCoverWrap, coverBadge: coverBadge,
+        liveInteract: liveInteractEl, tplInteract: tplInteractEl, interactBadge: interactBadge,
+        liveArea: liveAreaEl, tplArea: tplAreaEl, areaBadge: areaBadge
+    };
+    const SPEC_MAP = {
+        liveTitle: specLiveTitle, tplTitle: specTplTitleVal, titleBadge: specTitleBadge,
+        liveBody: specLiveBody, tplBody: specTplBodyVal, bodyBadge: specBodyBadge,
+        liveCover: specLiveCover, tplCoverWrap: specTplCoverWrap, coverBadge: specCoverBadge,
+        liveInteract: specLiveInteract, tplInteract: specTplInteract, interactBadge: specInteractBadge,
+        liveArea: specLiveArea, tplArea: specTplAreaVal, areaBadge: specAreaBadge
+    };
+
+    // ---------- 央视三兄弟：一次性拉取三个直播间信息，供人工目视核对 ----------
+    const TRIO_ROOMS = [
+        { name: '央视网', url: 'https://live.bilibili.com/8178490' },
+        { name: '央视网快看', url: 'https://live.bilibili.com/22142427' },
+        { name: '央视频', url: 'https://live.bilibili.com/21623527' }
+    ];
+    function trioRow(label, value) {
+        const row = document.createElement('div');
+        row.className = 'trio-row';
+        const l = document.createElement('span');
+        l.className = 'trio-lbl';
+        l.textContent = label;
+        const v = document.createElement('div');
+        v.className = 'trio-val';
+        v.textContent = value;
+        row.appendChild(l);
+        row.appendChild(v);
+        return row;
+    }
+    function buildTrioCard(r) {
+        const card = document.createElement('div');
+        card.className = 'trio-card';
+        const head = document.createElement('div');
+        head.className = 'trio-head';
+        const name = document.createElement('span');
+        name.className = 'trio-name';
+        name.textContent = r.info.name;
+        head.appendChild(name);
+        const room = document.createElement('span');
+        room.className = 'trio-room';
+        room.textContent = '房间号 ' + extractRoomId(r.info.url);
+        head.appendChild(room);
+        const link = document.createElement('a');
+        link.className = 'trio-link';
+        link.href = r.info.url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = '🔗 打开直播间';
+        head.appendChild(link);
+        card.appendChild(head);
+        if (!r.ok) {
+            const err = document.createElement('div');
+            err.style.cssText = 'font-size:0.84rem;color:var(--danger);';
+            err.textContent = '获取失败：' + r.err;
+            card.appendChild(err);
+            return card;
+        }
+        const d = r.data;
+        const rows = document.createElement('div');
+        rows.className = 'trio-rows';
+        rows.appendChild(trioRow('标题', (d.title || '').trim() || '（空）'));
+        rows.appendChild(trioRow('简介', (d.description || '').trim() || '（空）'));
+        const coverRow = document.createElement('div');
+        coverRow.className = 'trio-row';
+        const cl = document.createElement('span');
+        cl.className = 'trio-lbl';
+        cl.textContent = '封面';
+        const cv = document.createElement('div');
+        cv.className = 'trio-val';
+        const cover = d.user_cover || d.cover || d.keyframe || '';
+        if (cover) {
+            const img = document.createElement('img');
+            img.className = 'trio-cover';
+            img.alt = '直播间封面';
+            // 同上：回退走 fetch→dataURL，不能直接指向 SCF 代理（平台污染 Content-Type 导致碎图）
+            img.onerror = function () {
+                this.onerror = null;
+                fetchImageDataUrl(cover).then(function (r) { if (r && r.dataUrl) img.src = r.dataUrl; });
+            };
+            img.src = cover;
+            cv.appendChild(img);
+        } else {
+            cv.textContent = '（未获取到封面）';
+        }
+        coverRow.appendChild(cl);
+        coverRow.appendChild(cv);
+        rows.appendChild(coverRow);
+        rows.appendChild(trioRow('分区', (d.parent_area_name ? d.parent_area_name + ' / ' : '') + (d.area_name || '（无）')));
+        card.appendChild(rows);
+        return card;
+    }
+    async function runTrio() {
+        if (trioBtn.disabled) return;
+        trioBtn.disabled = true;
+        // 修复：先强制探测本地代理，避免 LOCAL_PROXY 还是默认 8787 时第一通道就走错
+        if (!localProxyOK) await probeLocalProxy(false);
+        trioStatus.textContent = '正在获取三个直播间信息…';
+        trioStatus.className = 'check-status loading';
+        trioResult.style.display = 'none';
+        trioResult.innerHTML = '';
+        trioCollapseBtn.style.display = 'none';
+        showOnlyResult('trio');    // 互斥：同时收起一键检查 / 指定直播间结果
+        try {
+            const results = await Promise.all(TRIO_ROOMS.map(async (t) => {
+                try {
+                    const data = await fetchBiliRoom(extractRoomId(t.url));
+                    return { ok: true, info: t, data: data };
+                } catch (e) {
+                    return { ok: false, info: t, err: (e && e.message) ? e.message : String(e) };
+                }
+            }));
+            results.forEach(r => trioResult.appendChild(buildTrioCard(r)));
+            trioResult.style.display = 'flex';
+            trioCollapseBtn.style.display = '';
+            trioCollapseBtn.textContent = '🔼 收起';
+            const failCount = results.filter(r => !r.ok).length;
+            trioStatus.textContent = failCount ? ('完成，' + failCount + ' 个获取失败') : '三个直播间信息已获取';
+            trioStatus.className = 'check-status ' + (failCount ? 'err' : 'ok');
+            showToast(failCount ? ('⚠️ ' + failCount + ' 个直播间获取失败') : '✅ 三兄弟信息已获取', failCount ? 'error' : 'success');
+        } catch (e) {
+            trioStatus.textContent = '获取失败';
+            trioStatus.className = 'check-status err';
+        } finally {
+            trioBtn.disabled = false;
+        }
+    }
+    trioBtn.addEventListener('click', runTrio);
+    // 收起 / 展开三兄弟结果（不重新请求，仅切换显示）
+    trioCollapseBtn.addEventListener('click', function () {
+        const collapsed = trioResult.style.display === 'none';
+        if (collapsed) {
+            trioResult.style.display = 'flex';
+            trioCollapseBtn.textContent = '🔼 收起';
+        } else {
+            trioResult.style.display = 'none';
+            const n = trioResult.querySelectorAll('.trio-card').length;
+            trioCollapseBtn.textContent = '🔽 展开（' + n + ' 个直播间）';
+        }
+    });
+
+    // ---------- 指定直播间检查：可填入比对基准 ----------
+    function parseRoomId(raw) {
+        const s = (raw || '').trim();
+        if (!s) return '';
+        if (/^\d+$/.test(s)) return s;      // 直接填房间号
+        const m = s.match(/(\d{4,})/);       // 从链接里截取房间号
+        return m ? m[1] : '';
+    }
+    async function runSpecCheck() {
+        const roomId = parseRoomId(specRoomInput.value);
+        if (!roomId) { showToast('请输入直播间链接或房间号', 'error'); return; }
+        if (specCheckBtn.disabled) return;
+        // 修复：先强制探测本地代理，避免 LOCAL_PROXY 还是默认 8787 时第一通道就走错
+        if (!localProxyOK) await probeLocalProxy(false);
+        specCheckBtn.disabled = true;
+        specStatus.textContent = '正在获取直播间信息…';
+        specStatus.className = 'check-status loading';
+        specResult.style.display = 'none';
+        showOnlyResult('spec');    // 互斥：同时收起一键检查 / 三兄弟结果
+        try {
+            const data = await fetchBiliRoom(roomId);
+            renderChecks(SPEC_MAP, data, {
+                title: specTplTitle.value,
+                body: specTplBody.value,
+                area: specTplArea.value,
+                zeroMode: normText(specTplArea.value) === normText('时政'),
+                coverDataUrl: (coverImageData && coverImageData.dataUrl) ? coverImageData.dataUrl : '',
+                coverFilename: (coverImageData && coverImageData.filename) ? coverImageData.filename : '',
+                interactPolicy: interactPolicy
+            });
+            specResult.style.display = 'flex';
+            const specAnchor = await fetchAnchorName(data.uid);
+            setResultCaption(specResultCaption, specRoomName, specRoomNo, roomId, specAnchor, '');
+            specStatus.textContent = '检查完成（房间号 ' + roomId + '）';
+            specStatus.className = 'check-status ok';
+        } catch (e) {
+            specStatus.textContent = '检查失败：' + (e && e.message ? e.message : e);
+            specStatus.className = 'check-status err';
+            showToast('检查失败，请确认本地代理已开启或网络可用', 'error');
+        } finally {
+            specCheckBtn.disabled = false;
+        }
+    }
+    specCheckBtn.addEventListener('click', runSpecCheck);
+    specRoomInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); runSpecCheck(); }
+    });
+
+    async function runCheck() {
+        if (checkBtn.disabled) return;
+        const acct = ACCOUNTS[currentAccount];
+        const roomId = acct ? extractRoomId(acct.url) : '';
+        if (!roomId) { showToast('未找到该账号的直播间链接', 'error'); return; }
+        // 修复：先强制探测本地代理，避免 LOCAL_PROXY 还是默认 8787 时第一通道就走错
+        if (!localProxyOK) await probeLocalProxy(false);
+        checkAccountName.textContent = currentAccount;
+        if (checkJump) checkJump.href = acct.url;
+        checkStatus.textContent = '正在获取直播间信息…';
+        checkStatus.className = 'check-status loading';
+        checkResult.style.display = 'none';
+        showOnlyResult('check');   // 互斥：同时收起三兄弟 / 指定直播间结果
+        checkBtn.disabled = true;
+        try {
+            const data = await fetchBiliRoom(roomId);
+            renderChecks(MAIN_MAP, data, {
+                title: inputTitle.value,
+                body: inputBody.value,
+                area: isZeroMode ? '时政' : '社会观察财经',
+                zeroMode: isZeroMode,
+                coverDataUrl: (coverImageData && coverImageData.dataUrl) ? coverImageData.dataUrl : '',
+                coverFilename: (coverImageData && coverImageData.filename) ? coverImageData.filename : '',
+                interactPolicy: interactPolicy
+            });
+            checkResult.style.display = 'flex';
+            // 顶部标明正在检查的直播间昵称（get_info 无昵称，用 uid 反查）
+            const anchorName = await fetchAnchorName(data.uid);
+            setResultCaption(checkResultCaption, checkRoomName, checkRoomNo, roomId, anchorName, currentAccount);
+            checkStatus.textContent = '检查完成';
+            checkStatus.className = 'check-status ok';
+        } catch (e) {
+            checkStatus.textContent = '检查失败：' + (e && e.message ? e.message : e);
+            checkStatus.className = 'check-status err';
+            showToast('检查失败，请确认本地代理已开启或网络可用', 'error');
+        } finally {
+            checkBtn.disabled = false;
+        }
+    }
+    checkBtn.addEventListener('click', runCheck);
+})();
+</script>
+<script>
+// 云端保活心跳：用于 e2b 沙箱这种"闲置会自动休眠"的环境，每 60 秒请求一次 /ping 制造持续流量。
+// 不适用于腾讯云函数（按需执行不会休眠）；分离部署（页面在静态托管 + 后端在云函数）时也不需要。
+(function () {
+    var isCloud = (location.protocol === 'http:' || location.protocol === 'https:')
+        && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1' && location.hostname !== '';
+    if (!isCloud) return;
+    if (window.CLOUD_API_BASE) return; // 分离部署：后端是云函数，永久在线，无需心跳
+    var BEAT_MS = 60000;
+    function beat() {
+        try {
+            fetch((window.CLOUD_API_BASE ? window.CLOUD_API_BASE : location.origin) + '/?api=ping&t=' + Date.now(), { cache: 'no-store' }).catch(function () {});
+        } catch (e) {}
+    }
+    beat();
+    setInterval(beat, BEAT_MS);
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) beat();
+    });
+})();
+</script>
+</body>
+</html>
