@@ -244,6 +244,31 @@
         .mini-reminder.show { display: block; animation: pulseIn .3s; }
         @keyframes pulseIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
         @media (max-width: 480px) { .card { padding: 18px; } .account-btn { padding: 8px 14px; font-size: 0.8rem; } .btn { padding: 10px 18px; font-size: 0.82rem; } .output-area { font-size: 0.8rem; padding: 14px; } .smart-paste-area textarea { min-height: 180px; } }
+        /* ===== 标题歧义确认弹窗：多个不同标题时弹出，让用户确认哪条是直播间标题 ===== */
+        @keyframes titleModalPop { from { opacity: 0; transform: translateY(-8px) scale(.98); } to { opacity: 1; transform: none; } }
+        .title-modal { display: none; position: fixed; inset: 0; z-index: 10050; }
+        .title-modal.show { display: block; }
+        .title-modal-mask { position: absolute; inset: 0; background: rgba(15,23,42,.55); }
+        .title-modal-box { position: relative; margin: 5vh auto 0; width: min(680px, 93vw); background: var(--card-bg); border-radius: 14px; box-shadow: 0 24px 60px rgba(0,0,0,.35); padding: 22px 24px 18px; max-height: 88vh; overflow: auto; animation: titleModalPop .25s; }
+        .title-modal-head { font-size: 1.15rem; font-weight: 800; color: #b45309; margin-bottom: 6px; }
+        .title-modal-tip { font-size: .82rem; color: var(--text-secondary); line-height: 1.75; margin-bottom: 14px; }
+        .title-modal-tip b { color: #b45309; }
+        .title-modal-list { display: flex; flex-direction: column; gap: 10px; }
+        .title-option { display: flex; gap: 10px; align-items: flex-start; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; cursor: pointer; background: #fff; transition: border-color .15s, background .15s; }
+        .title-option:hover { border-color: #93c5fd; background: #f8fbff; }
+        .title-option.sel { border-color: var(--primary-hover); background: #eff6ff; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+        .title-option input { margin-top: 4px; flex: none; accent-color: var(--primary-hover); }
+        .title-option .to-label { display: inline-block; font-size: .7rem; font-weight: 800; color: #1d4ed8; background: #dbeafe; border-radius: 6px; padding: 1px 8px; margin-bottom: 5px; }
+        .title-option .to-value { display: block; font-size: .86rem; font-weight: 600; color: var(--text); line-height: 1.65; word-break: break-all; }
+        .title-option .to-meta { display: inline-block; font-size: .68rem; font-weight: 700; color: var(--text-secondary); background: #f1f5f9; border-radius: 6px; padding: 1px 7px; margin-left: 6px; }
+        .title-option .to-value--body { white-space: pre-wrap; font-weight: 500; max-height: 190px; overflow: auto; background: #f8fafc; border: 1px solid #eef2f7; border-radius: 8px; padding: 8px 10px; margin-top: 2px; }
+        .title-modal-note { margin-top: 12px; font-size: .74rem; color: var(--text-secondary); line-height: 1.7; background: #f8fafc; border-radius: 8px; padding: 8px 12px; }
+        .title-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+        .title-modal-actions button { border: none; border-radius: 10px; padding: 10px 18px; font-size: .85rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .tm-cancel { background: #f1f5f9; color: #475569; }
+        .tm-cancel:hover { background: #e2e8f0; }
+        .tm-ok { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: #fff; box-shadow: 0 6px 16px rgba(37,99,235,.3); }
+        .tm-ok:hover { filter: brightness(1.06); }
     </style>
 </head>
 <body>
@@ -251,7 +276,7 @@
     <h1>📺 直播报备格式化工具</h1>
     <span class="page-badge">智能识别 v4</span>
     <span class="page-sub">整段粘贴 → 自动解析 → 表单确认 → 一键复制</span>
-    <span class="page-build">☁️ 2026-09-23 19:30（修复：①简介比对误报不一致——B站简介自带 &lt;p&gt; 标签，现在比对与展示前自动剥掉 HTML 标签；②人民日报客户端链接识别卡死——改走人民日报公开数据接口，SCF 代理放行 peopleapp.com 并自动补认证头，需同时更新 SCF 代码包）</span>
+    <span class="page-build">☁️ 2026-09-24 18:30（新增：粘贴内容里出现多个不同标题、或多段不同简介/通稿时，自动弹窗「请确认直播标题 / 请确认直播简介」由你选，不再擅自拼接；海报标题仍整体忽略。历史修复：简介 &lt;p&gt; 误报不一致、人民日报客户端链接识别卡死、海报标题混入直播间标题）</span>
 </div>
 <div class="app-container">
     <div class="card card-accent-blue">
@@ -511,6 +536,20 @@
     <button class="banner-close" id="pushBannerClose" type="button" aria-label="关闭">×</button>
 </div>
 <div class="toast" id="toast"></div>
+<div class="title-modal" id="titleModal">
+    <div class="title-modal-mask"></div>
+    <div class="title-modal-box" role="dialog" aria-modal="true">
+        <div class="title-modal-head" id="titleModalHead">⚠️ 请确认直播标题</div>
+        <div class="title-modal-tip">本次粘贴的内容里识别到<b>多个不同的标题</b>，请选择哪一个才是<b>直播间标题</b>（未被选中的不会写进模板）。</div>
+        <div class="title-modal-list" id="titleModalList"></div>
+        <div class="title-modal-note">提示：海报/宣传海报类的标题不会被识别，请放心；若两条都不对，可点左侧按钮自行修改表单里的标题。</div>
+        <div class="title-modal-actions">
+            <button class="tm-cancel" id="titleModalCancel" type="button">都不对，我自己改</button>
+            <button class="tm-ok" id="titleModalOk" type="button">✅ 使用选中的标题</button>
+        </div>
+    </div>
+</div>
+
 <script>
 (function() {
     const ACCOUNTS = {
@@ -955,7 +994,8 @@
     (function buildAliasMap() {
         const groups = {
             time: ['时间','直播时间','开播时间','预计时间','预计开播','时间安排','直播时间安排','档期','开始时间','直播日期','日期时间','时间点','开播时刻','直播时段'],
-            title: ['标题','直播标题','直播主题','主题','题目','名称','直播名称','场次','场次名称','直播场次','标题内容'],
+            title: ['直播间标题','标题','直播标题','直播主题','主题','题目','名称','直播名称','场次','场次名称','直播场次','标题内容'],
+            poster: ['海报标题','海报','宣传海报标题','海报主题','海报名称'],
             body: ['简介','通稿','直播简介','内容','直播内容','介绍','内容简介','正文','文案','通稿内容','概要','详情','说明','直播介绍','文案内容','直播详情','稿件','稿件内容'],
             push: ['推送语','推送','推送文案','转发语','导语','宣推语','推广语','发布语','播发语','推送内容'],
             rtmp: ['拉流地址','拉流','流地址','地址','直播地址','推流地址','推流','播放地址','源地址','流链接','直播流','码流地址','视频流','视频流地址','拉流链接','推拉流地址','推拉流','拉流url','流url','地址一','地址二','主地址','备地址'],
@@ -1094,12 +1134,13 @@
     }
 
     function smartParse(raw) {
-        const st = { time: [], title: [], body: [], push: [], account: [], rtmp: [], roomIds: [], unknown: [], current: null };
+        const st = { time: [], title: [], titleCands: [], body: [], bodyCands: [], bodyCandIdx: -1, push: [], account: [], rtmp: [], roomIds: [], poster: [], unknown: [], current: null, currentLabel: null };
         const lines = String(raw || '').split(/\r?\n/);
         for (const rawLine of lines) {
             let line = rawLine.replace(/\u00a0/g, ' ').trim();
             if (!line) {
                 if (st.current === 'body' || st.current === 'push') st[st.current].push('');
+                if (st.current === 'body' && st.bodyCandIdx >= 0) st.bodyCands[st.bodyCandIdx].value += '\n';
                 continue;
             }
             // 模板段头（整份模板回贴再解析场景）直接跳过，不混入简介、不计未识别
@@ -1162,24 +1203,37 @@
                         st.current = null;
                     } else if (field === 'cover') {
                         st.current = null; // 封面以上传的图片为准，文字忽略
+                    } else if (field === 'poster') {
+                        st.current = null; // 海报标题与直播无关，整体忽略，不混入直播间标题
                     } else {
                         // 正文末尾紧跟「下一段标签」（如【通稿】…【地址】）时，切出去并切换字段
                         let nextField = field;
                         let v = val;
+                        let bodySeed = '';
                         if (field === 'body' || field === 'push') {
                             const trailing = extractTrailingSection(v);
                             if (trailing) {
-                                if (trailing.text) st[field].push(trailing.text);
+                                if (trailing.text) { st[field].push(trailing.text); if (field === 'body') bodySeed = trailing.text; }
                                 nextField = trailing.field;
                                 v = ''; // 已消费，不再重复 push
+                            } else if (field === 'body' && v) {
+                                bodySeed = v;
                             }
                         }
+                        if (field === 'body' && bodySeed) {
+                            // 新的一段简介 → 开一条候选（其后的续行会追加到这一段）
+                            st.bodyCands.push({ label: li.label || '简介', value: bodySeed });
+                            st.bodyCandIdx = st.bodyCands.length - 1;
+                        }
                         st.current = nextField;
+                        st.currentLabel = li.label;
                         if (v) {
                             if ((field === 'time' || field === 'title') && st[field].join(' ').indexOf(v) > -1) {
                                 // 模板回贴等场景出现的重复项，跳过
                             } else {
                                 st[field].push(v);
+                                // 记录标题候选（含来源标签），供“多标题时弹窗确认”使用
+                                if (field === 'title') st.titleCands.push({ label: li.label || '', value: v });
                             }
                         }
                     }
@@ -1189,6 +1243,8 @@
                 }
             } else if (st.current) {
                 st[st.current].push(leftover); // 多行续行归属当前字段
+                if (st.current === 'title') st.titleCands.push({ label: st.currentLabel || '标题', value: String(leftover).trim() });
+                if (st.current === 'body' && st.bodyCandIdx >= 0) st.bodyCands[st.bodyCandIdx].value += '\n' + leftover;
             } else if (looksLikeTimeOnly(leftover)) {
                 st.time.push(leftover); // 裸写在第一行的纯时间（如"13:00"）自动归为直播时间
             } else {
@@ -1202,14 +1258,16 @@
         return arr.join(sep).replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
     }
     // ================= 解析并填充表单 =================
-    function parseAndFill() {
+    function parseAndFill(titleOverride, bodyOverride) {
         const rawText = pasteInput.value.trim();
         if (!rawText) { showToast('请先粘贴直播信息', 'error'); return; }
 
         const st = smartParse(rawText);
         const time = joinField(st.time, ' ');
-        const title = joinField(st.title, ' ');
-        const body = joinField(st.body, '\n');
+        const title = (titleOverride !== undefined && titleOverride !== null && String(titleOverride).trim())
+            ? String(titleOverride).trim() : joinField(st.title, ' ');
+        const body = (bodyOverride !== undefined && bodyOverride !== null && String(bodyOverride).trim())
+            ? String(bodyOverride) : joinField(st.body, '\n');
         const push = joinField(st.push, '\n');
         const accountText = joinField(st.account, ' ');
 
@@ -1280,9 +1338,167 @@
         }
     }
 
-    parseFillBtn.addEventListener('click', parseAndFill);
+    // ================= 标题歧义处理：识别到多个不同标题时弹窗确认 =================
+    // 候选去重（同一标题被多种标签引用时只保留一条）
+    function dedupeTitleCands(list) {
+        const arr = Array.isArray(list) ? list : [];
+        const seen = {};
+        const out = [];
+        for (const c of arr) {
+            const v = String((c && c.value) || '').trim();
+            if (!v || seen[v]) continue;
+            seen[v] = 1;
+            out.push({ label: String((c && c.label) || '标题').trim() || '标题', value: v });
+        }
+        return out;
+    }
+    // 默认选中项：标签越贴近“直播标题”越优先（直播间标题 > 直播标题/直播主题 > 标题）
+    function pickDefaultTitleIdx(cands) {
+        const score = l => {
+            if (/直播间标题/.test(l)) return 4;
+            if (/直播标题|直播主题/.test(l)) return 3;
+            if (/标题/.test(l)) return 2;
+            return 1;
+        };
+        let best = 0;
+        for (let i = 1; i < cands.length; i++) {
+            if (score(cands[i].label) >= score(cands[best].label)) best = i;
+        }
+        return best;
+    }
+    // 简介候选去重（按“去掉空白后”的文本判重，同一条内容被多种标签引用时只留一条）
+    function dedupeBodyCands(list) {
+        const arr = Array.isArray(list) ? list : [];
+        const seen = {};
+        const out = [];
+        for (const c of arr) {
+            const v = String((c && c.value) || '').replace(/[ \t\u00a0]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+            if (!v) continue;
+            const key = v.replace(/\s+/g, '');
+            if (seen[key]) continue;
+            seen[key] = 1;
+            out.push({ label: String((c && c.label) || '简介').trim() || '简介', value: v });
+        }
+        return out;
+    }
+    // 简介默认选中项：标签越贴近“直播简介”越优先（直播简介/内容简介 > 简介 > 通稿/稿件 > 其他）
+    function pickDefaultBodyIdx(cands) {
+        const score = l => {
+            if (/直播简介|内容简介|直播介绍/.test(l)) return 4;
+            if (/简介/.test(l)) return 3;
+            if (/通稿|稿件|文案/.test(l)) return 2;
+            return 1;
+        };
+        let best = 0;
+        for (let i = 1; i < cands.length; i++) {
+            if (score(cands[i].label) >= score(cands[best].label)) best = i;
+        }
+        return best;
+    }
+    // 通用「多候选确认」弹窗：返回选中项文本；点“自己改”或按 Esc 返回 null
+    function askChoice(cfg) {
+        return new Promise(resolve => {
+            const modal = document.getElementById('titleModal');
+            const list = document.getElementById('titleModalList');
+            const cands = (cfg && cfg.cands) || [];
+            if (!modal || !list || !cands.length) { resolve(null); return; }
+            const headEl = document.getElementById('titleModalHead');
+            const tipEl = modal.querySelector('.title-modal-tip');
+            const noteEl = modal.querySelector('.title-modal-note');
+            const defIdx = (cfg.defaultIdx >= 0 && cfg.defaultIdx < cands.length) ? cfg.defaultIdx : 0;
+            if (headEl) headEl.textContent = cfg.head || '请确认要使用的内容';
+            if (tipEl) tipEl.innerHTML = String(cfg.tip || '').replace('{n}', cands.length);
+            if (noteEl && cfg.note) noteEl.innerHTML = cfg.note;
+            list.innerHTML = cands.map((c, i) =>
+                '<label class="title-option' + (i === defIdx ? ' sel' : '') + '">' +
+                '<input type="radio" name="fieldChoice" value="' + i + '"' + (i === defIdx ? ' checked' : '') + '>' +
+                '<span><span class="to-label">' + escapeHtml(c.label) + '</span>' +
+                (cfg.meta ? '<span class="to-meta">' + escapeHtml(cfg.meta(c)) + '</span>' : '') +
+                '<span class="to-value' + (cfg.multiline ? ' to-value--body' : '') + '">' + escapeHtml(c.value) + '</span></span>' +
+                '</label>').join('');
+            const done = val => {
+                modal.classList.remove('show');
+                document.removeEventListener('keydown', onKey);
+                resolve(val);
+            };
+            const onKey = e => { if (e.key === 'Escape' || e.key === 'Esc') done(null); };
+            const sync = () => {
+                Array.prototype.forEach.call(list.querySelectorAll('.title-option'), o => {
+                    const inp = o.querySelector('input');
+                    o.classList.toggle('sel', !!(inp && inp.checked));
+                });
+            };
+            Array.prototype.forEach.call(list.querySelectorAll('input'), inp => inp.addEventListener('change', sync));
+            const okBtn = document.getElementById('titleModalOk');
+            if (okBtn) okBtn.textContent = cfg.okText || '✅ 使用选中的内容';
+            okBtn.onclick = () => {
+                const sel = list.querySelector('input:checked');
+                done(sel ? cands[+sel.value].value : null);
+            };
+            document.getElementById('titleModalCancel').onclick = () => done(null);
+            document.addEventListener('keydown', onKey);
+            modal.classList.add('show');
+        });
+    }
+    // 标题确认弹窗
+    function askTitleChoice(cands, defaultIdx) {
+        return askChoice({
+            cands: cands, defaultIdx: defaultIdx,
+            head: '⚠️ 请确认直播标题',
+            okText: '✅ 使用选中的标题',
+            tip: '本次粘贴的内容里识别到<b>{n} 个不一样的标题</b>，请选择哪一个才是<b>直播间标题</b>（未被选中的不会写进模板）。',
+            note: '提示：海报/宣传海报类的标题不会被识别，请放心；若都不对，可点左侧按钮自行修改表单里的标题。'
+        });
+    }
+    // 简介确认弹窗
+    function askBodyChoice(cands, defaultIdx) {
+        return askChoice({
+            cands: cands, defaultIdx: defaultIdx, multiline: true,
+            meta: c => String(c.value || '').replace(/\s+/g, '').length + ' 字',
+            head: '⚠️ 请确认直播简介',
+            okText: '✅ 使用选中的简介',
+            tip: '本次粘贴的内容里识别到<b>{n} 段不一样的简介/通稿</b>，请选择哪一段才是<b>直播简介</b>（未被选中的不会写进模板）。',
+            note: '提示：先在下面各段里看清内容再确认；若都不对，可点左侧按钮自行修改表单里的简介。'
+        });
+    }
+    // 解析并填充入口：先按最贴近“直播标题”的候选填充；若识别到多个不同标题 → 弹窗确认
+    // 解析并填充入口：多标题 / 多段简介时逐个弹窗确认（先标题、后简介）；确认前先按默认候选填入
+    async function smartParseAndFill() {
+        const rawText = pasteInput.value.trim();
+        if (!rawText) { showToast('请先粘贴直播信息', 'error'); return; }
+        const st = smartParse(rawText);
+        const tcands = dedupeTitleCands(st.titleCands);
+        const bcands = dedupeBodyCands(st.bodyCands);
+        const tIdx = tcands.length >= 2 ? pickDefaultTitleIdx(tcands) : -1;
+        const bIdx = bcands.length >= 2 ? pickDefaultBodyIdx(bcands) : -1;
+        let curTitle = tIdx >= 0 ? tcands[tIdx].value : null;
+        let curBody = bIdx >= 0 ? bcands[bIdx].value : null;
+        parseAndFill(curTitle, curBody);
+        const notes = [];
+        let manual = false;
+        if (tIdx >= 0) {
+            const picked = await askTitleChoice(tcands, tIdx);
+            if (picked === null || picked === undefined) {
+                manual = true; notes.push('标题先按「' + tcands[tIdx].label + '」填入');
+            } else if (picked !== curTitle) {
+                curTitle = picked; parseAndFill(curTitle, curBody); notes.push('标题已按你的选择更新');
+            }
+        }
+        if (bIdx >= 0) {
+            const pickedB = await askBodyChoice(bcands, bIdx);
+            if (pickedB === null || pickedB === undefined) {
+                manual = true; notes.push('简介先按「' + bcands[bIdx].label + '」填入');
+            } else if (pickedB !== curBody) {
+                curBody = pickedB; parseAndFill(curTitle, curBody); notes.push('简介已按你的选择更新');
+            }
+        }
+        if (notes.length) {
+            showToast((manual ? '⚠️ ' : '✅ ') + notes.join('；') + (manual ? '，可手动修改' : ''), manual ? 'error' : 'success');
+        }
+    }
+    parseFillBtn.addEventListener('click', smartParseAndFill);
     pasteInput.addEventListener('keydown', e => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); parseAndFill(); }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); smartParseAndFill(); }
     });
     [inputTime, inputTitle, inputBody, inputRtmp].forEach(el => {
         el.addEventListener('input', generateOutput);
@@ -1954,7 +2170,7 @@
     // ================= 快捷键 =================
     document.addEventListener('keydown', e => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            if (document.activeElement === pasteInput) { e.preventDefault(); parseAndFill(); }
+            if (document.activeElement === pasteInput) { e.preventDefault(); smartParseAndFill(); }
             else { e.preventDefault(); generateOutput(); if (generatedFull) showToast('✅ 模板已生成'); }
         }
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
@@ -1975,7 +2191,7 @@
 
     window.__liveReportTool = {
         generate: generateOutput,
-        parseAndFill: parseAndFill,
+        parseAndFill: smartParseAndFill,
         smartParse: smartParse,
         toggleZero: () => zeroToggleBtn.click(),
         setInteractPolicy: (v) => setInteractPolicy(v, true),
