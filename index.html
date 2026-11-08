@@ -353,7 +353,7 @@
     <h1>📺 直播报备格式化工具</h1>
     <span class="page-badge">智能识别 v4</span>
     <span class="page-sub">整段粘贴 → 自动解析 → 表单确认 → 一键复制</span>
-    <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-08 11:55（互动识别支持括号写法：弹幕互动：（开）/ 礼物互动：（关）；互动需求智能识别 / 纯净模式礼物提醒 / 非六家央媒不出推拉流报备 · 点此看完整日志）</span>
+    <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-08 15:10（修值班显示：当班人旁标的是当前时段，不再误显示下一班的时段 · 点此看完整日志）</span>
 </div>
 <div class="app-container">
     <div class="card card-accent-blue">
@@ -2194,8 +2194,15 @@
         if (manual) {
             sub = manual;
         } else {
+            let curLabel = '';
+            if (dutyData && Array.isArray(dutyData.live)) {
+                const dNow = new Date(), nMin = dNow.getHours() * 60 + dNow.getMinutes();
+                const labs = [];
+                dutyData.live.forEach(function (it) { if (dutyIsActive(it, nMin) && it.label) labs.push(it.label); });
+                curLabel = labs.join('、');
+            }
             const nx = dutyNextShift();
-            if (nx) sub = nx.label + ' · ' + nx.minutesLeft + ' 分钟后换班（' + nx.start + ' ' + (nx.names.join('、') || '未排班') + '）';
+            if (nx) sub = (curLabel ? curLabel + ' · ' : '') + nx.minutesLeft + ' 分钟后换班（' + nx.start + ' ' + (nx.names.join('、') || '未排班') + '）';
         }
         txt.innerHTML = '当班直播审核：<b>' + escapeHtml(names.join('、')) + '</b>' +
             (sub ? ' <span class="duty-sub">' + escapeHtml(sub) + '</span>' : '') +
@@ -4910,7 +4917,17 @@
     <div class="cl-sub">直播报备格式化工具 · 智能识别 v4 · 按时间倒序</div>
 
     <div class="cl-item hot">
-        <div class="cl-date">2026-11-08 11:55<span class="cl-tag">最新</span></div>
+        <div class="cl-date">2026-11-08 15:10<span class="cl-tag">最新</span></div>
+        <div class="cl-body">
+            <ul>
+                <li><b>修值班显示错位</b>：「当班直播审核」里当班人名字旁标注的时段，改显示<b>当前时段</b>（如 15:00-18:00），不再误显示下一班的时段（之前阳羊 15-18 当班却标成 18:00-21:00）。</li>
+                <li>换班提示保留：X 分钟后换班（下一班开始时间 + 人名）。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-08 11:55</div>
         <div class="cl-body">
             <ul>
                 <li><b>智能识别会读互动需求了</b>（纯净 / 黑名单都支持）：<code>互动：关</code>、<code>弹幕互动：关</code>、<code>礼物：开</code>、<code>评论开，礼物关</code>、<code>1级禁言+词包</code>、<code>先审后发</code> 等写法都能认，识别后自动同步到「互动开关」下拉框。</li>
@@ -4945,17 +4962,6 @@
         </div>
     </div>
 
-    <div class="cl-item">
-        <div class="cl-date">2026-11-05 22:55</div>
-        <div class="cl-body">
-            <ul>
-                <li><b>纯净 / 黑名单判据重写</b>：改用「接口 7 个模块骨架化（null 数 ≥3）」判定，修复观察者网 948391、23046247 被误判纯净的问题。</li>
-                <li><b>检测失败不误判黑名单</b>：接口偶发 400 / 超时时重试一次，仍失败按「纯净」完整模板输出并在徽标标注「检测失败·按纯净输出」。</li>
-                <li><b>搜索结果房间号可点击</b>：房间号前自动加 <code>live.bilibili.com/</code>，点开即进直播间；同时修复普通媒体提示「未找到直播间链接」。</li>
-                <li>两通道并行竞速（接口 + 页面内嵌数据），检测从 12~25s 缩短，并加状态提示条。</li>
-            </ul>
-        </div>
-    </div>
 </div>
 <script>
     function showChangelog() {
