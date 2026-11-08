@@ -29,7 +29,31 @@
         .page-header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.01em; }
         .page-header .page-badge { font-size: 0.7rem; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; padding: 3px 10px; border-radius: 999px; }
         .page-header .page-sub { font-size: 0.82rem; color: var(--text-secondary); }
-        .page-header .page-build { font-size: 0.7rem; font-weight: 600; color: #15803d; background: #f0fdf4; border: 1px dashed #86efac; padding: 3px 10px; border-radius: 6px; margin-left: auto; }
+        .page-header .page-build { font-size: 0.7rem; font-weight: 600; color: #15803d; background: #f0fdf4; border: 1px dashed #86efac; padding: 3px 10px; border-radius: 6px; margin-left: auto; cursor: pointer; }
+        .page-header .page-build:hover { background: #dcfce7; border-style: solid; }
+        .changelog-mask { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 9998; }
+        .changelog-mask.show { display: block; }
+        .changelog-card { display: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%);
+            width: min(780px, 92vw); max-height: 82vh; overflow: auto; background: #fff; border-radius: 16px;
+            box-shadow: 0 24px 64px rgba(15,23,42,.3); z-index: 9999; padding: 20px 24px 24px; }
+        .changelog-card.show { display: block; }
+        .changelog-card h3 { font-size: 1.02rem; font-weight: 800; margin-bottom: 3px; }
+        .changelog-card .cl-sub { font-size: .72rem; color: var(--text-secondary); margin-bottom: 16px; }
+        .cl-close { position: absolute; right: 16px; top: 16px; border: 0; background: #f1f5f9; border-radius: 8px;
+            width: 30px; height: 30px; font-size: .92rem; cursor: pointer; color: #475569; font-family: inherit; }
+        .cl-close:hover { background: #e2e8f0; }
+        .cl-item { border-left: 3px solid #bfdbfe; padding: 2px 0 2px 12px; margin: 0 0 14px; }
+        .cl-item.hot { border-left-color: #f59e0b; }
+        .cl-date { font-size: .73rem; font-weight: 800; color: #1d4ed8; }
+        .cl-item.hot .cl-date { color: #b45309; }
+        .cl-tag { display: inline-block; font-size: .62rem; font-weight: 800; color: #fff; background: #f59e0b;
+            border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: 1px; }
+        .cl-body { font-size: .8rem; line-height: 1.85; color: var(--text); margin-top: 4px; }
+        .cl-body b { color: #0f172a; }
+        .cl-body code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em;
+            background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 0 4px; color: #0f172a; }
+        .cl-body ul { margin: 2px 0 0 16px; }
+        .cl-body li { margin-bottom: 2px; }
         .app-container { max-width: 1760px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.05fr 1.1fr 1fr; gap: 18px; align-items: start; }
         @media (max-width: 1500px) { .app-container { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 900px) { .app-container { grid-template-columns: 1fr; gap: 16px; } }
@@ -136,6 +160,37 @@
         .account-btn.main { border-color: #dc2626; color: #b91c1c; background: #fef2f2; }
         .account-btn.main:hover { border-color: #b91c1c; color: #991b1b; background: #fee2e2; }
         .account-btn.main.active { border-color: #b91c1c; background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35); }
+        .media-pick-row { margin-top: 10px; position: relative; }
+        .media-pick-row input { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 9px; font-size: 0.86rem; outline: none; background: #fff; }
+        .media-pick-row input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+        .media-pick-list { display: none; position: absolute; left: 0; right: 0; top: 44px; z-index: 60; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(15,23,42,0.14); max-height: 280px; overflow-y: auto; }
+        .media-pick-list.show { display: block; }
+        .media-pick-item { padding: 8px 12px; font-size: 0.85rem; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; }
+        .media-pick-item:hover, .media-pick-item.active { background: #eff6ff; color: var(--primary); }
+        .media-pick-item .rid { color: var(--text-secondary); font-size: 0.74rem; }
+        .media-pick-item a.rid { text-decoration: none; }
+        .media-pick-item a.rid:hover { text-decoration: underline; color: var(--primary); }
+        .media-pick-empty { padding: 10px 12px; font-size: 0.82rem; color: var(--text-secondary); }
+        .media-pick-current { margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary); }
+        .media-pick-current b { color: var(--primary); }
+        .media-pick-current .tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 20px; font-size: 0.72rem; }
+        .media-pick-current .tag.pure { background: #fee2e2; color: #b91c1c; }
+        .media-pick-current .tag.normal { background: #e0f2fe; color: #0369a1; }
+        .media-pick-current .mode-switch { display: inline-flex; align-items: center; gap: 4px; margin-left: 10px; font-size: 0.72rem; }
+        .media-pick-current .mode-btn { border: 1px solid var(--border); background: #fff; color: var(--text-secondary); border-radius: 20px; padding: 1px 9px; font-size: 0.72rem; line-height: 1.5; cursor: pointer; transition: all .15s; }
+        .media-pick-current .mode-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .media-pick-current .mode-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+        .mode-unknown { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 200px; text-align: center; color: var(--text); font-weight: 600; white-space: normal; }
+        .mode-unknown span { font-weight: 400; font-size: 0.78rem; color: var(--text-secondary); max-width: 440px; line-height: 1.7; }
+        /* 当班直播审核（数据来自腾讯文档每日值班表 live.json） */
+        .duty-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding: 8px 12px; border-radius: 8px; background: #f4f1fc; border: 1px solid #ded6f5; font-size: 0.78rem; color: #4c3f8f; }
+        .duty-row .duty-dot { width: 8px; height: 8px; border-radius: 50%; background: #8b7bd8; flex: 0 0 auto; }
+        .duty-row .duty-dot.off { background: #c3bfd4; }
+        .duty-row b { color: #5b46b8; }
+        .duty-row .duty-sub { color: #7c7196; font-size: 0.72rem; }
+        .duty-row select, .duty-row button { font-size: 0.72rem; border-radius: 6px; border: 1px solid #cfc7ea; background: #fff; color: #4c3f8f; padding: 2px 7px; cursor: pointer; font-family: inherit; }
+        .duty-row button:hover, .duty-row select:hover { border-color: #8b7bd8; }
+        .duty-row .duty-warn { color: #b45309; font-size: 0.72rem; }
         .toggle-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .toggle-btn { padding: 10px 18px; border-radius: 10px; border: 2px solid var(--border); background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
         .toggle-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
@@ -193,6 +248,10 @@
         .output-area::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .btn-copy-main { width: 100%; justify-content: center; padding: 14px 26px; font-size: 1rem; }
         .stage-hint { display: none; margin-top: 12px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; border-radius: 10px; padding: 10px 14px; font-size: 0.78rem; line-height: 1.8; }
+        /* 纯净/黑名单检测状态提示条（只做页面提示，不进入复制内容） */
+        .mode-hint { display: none; align-items: center; gap: 8px; margin-bottom: 12px; border-radius: 8px; padding: 9px 12px; font-size: 0.78rem; line-height: 1.6; white-space: normal; }
+        .mode-hint.pending { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; }
+        .mode-hint.failed { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
         .parse-summary { display: none; margin-top: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #065f46; border-radius: 10px; padding: 10px 14px; font-size: 0.75rem; line-height: 1.8; }
         .parse-summary .chip { display: inline-block; background: #fff; border: 1px solid #bbf7d0; border-radius: 6px; padding: 1px 8px; margin: 2px 6px 2px 0; }
         .parse-summary .warn { color: #b45309; font-weight: 700; }
@@ -225,6 +284,12 @@
         .zero-reminder { display: none; margin-bottom: 18px; background: linear-gradient(135deg, #fff7ed, #ffedd5); border: 1.5px solid #f97316; border-left: 6px solid #f97316; color: #9a3412; border-radius: 10px; padding: 14px 18px; font-size: 0.9rem; font-weight: 600; line-height: 1.8; }
         .zero-reminder b { color: #c2410c; }
         .zero-reminder.show { display: block; animation: pulseIn .3s; }
+        /* 纯净模式识别到礼物需求 → 醒目红色提醒 */
+        .pure-gift-warn { display: none; margin-bottom: 18px; background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #dc2626; border-left: 10px solid #dc2626; color: #991b1b; border-radius: 10px; padding: 16px 20px; font-size: 0.98rem; font-weight: 800; line-height: 1.8; letter-spacing: .2px; }
+        .pure-gift-warn .pgw-tag { display: inline-block; margin-right: 8px; }
+        .pure-gift-warn .pgw-sub { display: block; margin-top: 6px; font-size: 0.82rem; font-weight: 600; color: #b91c1c; }
+        .pure-gift-warn.show { display: block; animation: pureGiftPulse 1.6s ease-in-out 3; }
+        @keyframes pureGiftPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,.38); } 50% { box-shadow: 0 0 0 12px rgba(220,38,38,.10); } }
         /* 互动开关 / 管控策略 下拉 */
         .policy-select { position: relative; }
         .policy-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; color: var(--text); font-size: .88rem; font-weight: 600; cursor: pointer; transition: all .2s; font-family: var(--font); }
@@ -269,14 +334,26 @@
         .tm-cancel:hover { background: #e2e8f0; }
         .tm-ok { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: #fff; box-shadow: 0 6px 16px rgba(37,99,235,.3); }
         .tm-ok:hover { filter: brightness(1.06); }
-    </style>
+    
+.ia-on { color:#1a9c4b; font-weight:700; font-size:0.95rem; }
+.ia-off { color:#d93025; font-weight:700; font-size:0.95rem; }
+.ia-na { color:var(--text-secondary); font-weight:600; font-size:0.92rem; }
+.ia-meta { font-size:0.74rem; color:var(--text-secondary); margin-top:5px; line-height:1.5; }
+.ia-spin { display:inline-block; width:12px; height:12px; border:2px solid #ccc;
+           border-top-color:#1677ff; border-radius:50%; animation: ia-spin 0.8s linear infinite;
+           vertical-align:-1px; margin-right:4px; }
+@keyframes ia-spin { to { transform: rotate(360deg); } }
+.ia-login { background:#1677ff; color:#fff; border:0; border-radius:5px; padding:1px 8px;
+            font-size:0.76rem; cursor:pointer; margin:0 2px; }
+.ia-login:hover { background:#0958d9; }
+</style>
 </head>
 <body>
 <div class="page-header">
     <h1>📺 直播报备格式化工具</h1>
     <span class="page-badge">智能识别 v4</span>
     <span class="page-sub">整段粘贴 → 自动解析 → 表单确认 → 一键复制</span>
-    <span class="page-build">☁️ 2026-09-24 18:30（新增：粘贴内容里出现多个不同标题、或多段不同简介/通稿时，自动弹窗「请确认直播标题 / 请确认直播简介」由你选，不再擅自拼接；海报标题仍整体忽略。历史修复：简介 &lt;p&gt; 误报不一致、人民日报客户端链接识别卡死、海报标题混入直播间标题）</span>
+    <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-08 11:55（互动识别支持括号写法：弹幕互动：（开）/ 礼物互动：（关）；互动需求智能识别 / 纯净模式礼物提醒 / 非六家央媒不出推拉流报备 · 点此看完整日志）</span>
 </div>
 <div class="app-container">
     <div class="card card-accent-blue">
@@ -294,7 +371,20 @@
                     <button class="account-btn" data-account="央视财经" data-url="https://live.bilibili.com/4268448">央视财经</button>
                     <button class="account-btn" data-account="共青团中央" data-url="https://live.bilibili.com/54">共青团中央</button>
                 </div>
+                <div class="duty-row" id="dutyRow">
+                    <span class="duty-dot off" id="dutyDot"></span>
+                    <span id="dutyText">当班直播审核：读取中…</span>
+                    <select id="dutySelect" title="可手动切换班次"><option value="auto">自动（按当前时间）</option></select>
+                    <button type="button" id="dutyReloadBtn" title="重新拉取值班表">↻ 刷新</button>
+                    <button type="button" id="dutyImportBtn" title="手动导入抓取脚本生成的 live.json">导入值班表</button>
+                    <input type="file" id="dutyFileInput" accept=".json,application/json" style="display:none">
+                </div>
+                <div class="media-pick-row">
+                    <input type="text" id="mediaSearchInput" autocomplete="off" placeholder="🔍 搜索其他媒体 / UP主（如 观察者网、人民网、中国青年报…）">
+                    <div class="media-pick-list" id="mediaPickList"></div>
+                </div>
             </div>
+            <div class="media-pick-current" id="mediaPickCurrent">当前账号：<b>央视新闻</b> · 央媒完整模板</div>
         </div>
         <div class="smart-paste-area">
             <label><span>📥 整段粘贴智能解析</span></label>
@@ -358,6 +448,7 @@
                     <button class="policy-option" type="button" data-value="5级禁言+词包"><span class="tick"></span>5级禁言+词包</button>
                     <button class="policy-option" type="button" data-value="先审后发"><span class="tick"></span>先审后发</button>
                     <button class="policy-option danger" type="button" data-value="关闭互动"><span class="tick"></span>关闭互动（弹幕互动、飘屏均关）</button>
+                    <button class="policy-option danger" type="button" data-value="关闭礼物"><span class="tick"></span>仅关礼物 / 飘屏（弹幕互动开）</button>
                 </div>
             </div>
             <div class="hint">选择后输出「弹幕互动：开，所选策略」；选「关闭互动」则弹幕互动、飘屏均为关</div>
@@ -378,8 +469,9 @@
     </div>
     <div class="card card-accent-green card-output">
         <div class="card-header"><h2><span class="step">3</span><span>📄</span> 报备输出</h2><span class="subtitle">生成 · 一键复制富文本</span></div>
+        <div class="pure-gift-warn" id="pureGiftWarn"><span class="pgw-tag">🚨</span>该直播间在纯净模式，识别到礼物需求，请评估是否移出<span class="pgw-sub">纯净模式没有礼物功能：下面的结果已按「互动 / 飘屏 同步」输出，礼物开关不参与</span></div>
         <div class="zero-reminder" id="zeroReminder">⚠️ 涉零模式已开启但未填写直播时间——请记得配置：<b>首黑、全公域xl、禁止上下滑</b></div>
-        <div class="output-area" id="outputArea"><div class="output-empty" id="outputEmpty">点击「生成报备模板」按钮<br>或直接修改输入后自动生成</div><div id="outputContent" style="display:none;"></div></div>
+        <div class="output-area" id="outputArea"><div class="mode-hint" id="modeHint"></div><div class="mode-hint pending" id="templateNote"></div><div class="output-empty" id="outputEmpty">点击「生成报备模板」按钮<br>或直接修改输入后自动生成</div><div id="outputContent" style="display:none;"></div></div>
         <div class="btn-group" style="margin-top:16px;">
             <button class="btn btn-success btn-copy-main" id="wecomCopyBtn"><span>📄</span> 一键复制富文本（文字+封面图）</button>
         </div>
@@ -401,7 +493,7 @@
     <div class="card card-accent-orange">
         <div class="card-header"><h2><span class="step">4</span><span>🔍</span> 直播间信息智能检查</h2><span class="subtitle">核对直播间与报备模板一致性</span></div>
         <div class="check-bar-hint" style="font-size:0.74rem;color:var(--text-secondary);margin-bottom:12px;line-height:1.7;">
-            💡 <b>互动开/关</b>：bilibili 不向观众端返回该状态，需<b>主播后台</b>或直播间<b>目视</b>确认；本工具仅自动核对「禁言等级 / 弹幕热词」。
+            💡 <b>互动开/关</b>：bilibili 接口不向观众端返回该状态；本工具用本机 Edge 打开直播间页面<b>实测</b>（需先登录 B站一次）。
         </div>
         <div class="check-bar">
             <button class="btn btn-primary" id="checkBtn" type="button">🔍 一键检查信息</button>
@@ -459,10 +551,10 @@
                 </div>
             </div>
             <div class="check-item">
-                <div class="check-head"><span class="check-name">互动管控</span><span class="check-badge" id="interactBadge"></span></div>
+                <div class="check-head"><span class="check-name">互动开关</span><span class="check-badge" id="interactBadge"></span></div>
                 <div class="check-cols">
                     <div class="check-col">
-                        <span class="check-lbl">直播间识别（接口自动核对）</span>
+                        <span class="check-lbl">直播间识别（浏览器实测）</span>
                         <div class="check-val" id="liveInteract">—</div>
                     </div>
                     <div class="check-col"><span class="check-lbl">报备模板</span><div class="check-val" id="tplInteract">—</div></div>
@@ -478,7 +570,7 @@
                     <div class="check-col"><span class="check-lbl">报备模板</span><div class="check-val" id="tplArea">—</div></div>
                 </div>
             </div>
-            <div class="check-note">⚠️ 标题 / 简介 已做规范化自动比对；<b>封面为人工核对</b>，请目视两张图是否一致；<b>直播分区</b>由接口自动核对（非时政模式比对实际分区与模板声明是否一致，时政分区需登录后台确认）；<b>互动管控</b>中「禁言等级 / 弹幕热词」由接口自动核对，<b>互动开/关</b>因 bilibili 接口不返回该状态（观众端及登录态均无），无法自动核验，请在主播后台或直播间<b>目视</b>确认。如不一致请修改直播间设置后再检查。</div>
+            <div class="check-note">⚠️ 标题 / 简介 已做规范化自动比对；<b>封面为人工核对</b>，请目视两张图是否一致；<b>直播分区</b>由接口自动核对（非时政模式比对实际分区与模板声明是否一致，时政分区需登录后台确认）；<b>互动开关</b>由本机 Edge 打开直播间页面<b>实测</b>（bilibili 接口不返回该状态）。首次使用请先<button type="button" id="btnInteractLogin" class="ia-login">登录B站</button>一次，之后长期有效；云端模式或未登录时显示「需人工核对」。如不一致请修改直播间设置后再检查。</div>
         </div>
         <div class="spec-section">
             <div class="result-caption" id="specResultCaption" style="display:none;">
@@ -509,9 +601,9 @@
                     </div>
                 </div>
                 <div class="check-item">
-                    <div class="check-head"><span class="check-name">互动管控</span><span class="check-badge" id="specInteractBadge"></span></div>
+                    <div class="check-head"><span class="check-name">互动开关</span><span class="check-badge" id="specInteractBadge"></span></div>
                     <div class="check-cols">
-                        <div class="check-col"><span class="check-lbl">直播间识别（接口自动核对）</span><div class="check-val" id="specLiveInteract">—</div></div>
+                        <div class="check-col"><span class="check-lbl">直播间识别（浏览器实测）</span><div class="check-val" id="specLiveInteract">—</div></div>
                         <div class="check-col"><span class="check-lbl">报备模板</span><div class="check-val" id="specTplInteract">—</div></div>
                     </div>
                 </div>
@@ -522,7 +614,7 @@
                         <div class="check-col"><span class="check-lbl">比对基准</span><div class="check-val" id="specTplAreaVal"></div></div>
                     </div>
                 </div>
-                <div class="check-note">⚠️ 填写「比对基准」后会自动比对并给出 ✅/❌；留空则仅展示直播间实际信息。<b>封面为人工核对</b>，请目视两张图是否一致；互动开/关需<b>主播后台 / 目视</b>确认。</div>
+                <div class="check-note">⚠️ 填写「比对基准」后会自动比对并给出 ✅/❌；留空则仅展示直播间实际信息。<b>封面为人工核对</b>，请目视两张图是否一致；<b>互动开关</b>由本机 Edge 实测，未启动本地代理时显示「需人工核对」。</div>
             </div>
         </div>
     </div>
@@ -560,6 +652,1600 @@
         '央视财经': { label: '央视财经', url: 'https://live.bilibili.com/4268448' },
         '共青团中央': { label: '共青团中央', url: 'https://live.bilibili.com/54' }
     };
+
+    // ===== 媒体总表：1333 家（来源 room id.xlsx，昵称 → roomId）=====
+    const ROOM_TABLE = {
+        "央视新闻": "21686237",
+        "新华社": "22015508",
+        "人民日报": "23175826",
+        "共青团中央": "910884",
+        "观察者网": "948391",
+        "大漠叔叔": "21574414",
+        "中国国家地理": "23374509",
+        "央视网": "8178490",
+        "波士顿圆脸": "11967804",
+        "谭乔": "11295468",
+        "人民网": "22775633",
+        "吃花椒的喵酱": "1997902586",
+        "央视频": "21623527",
+        "卢克文工作室": "22756466",
+        "中国食品报融媒体": "24876215",
+        "张召忠": "390638",
+        "阿特警官": "21758550",
+        "央视农业": "23872572",
+        "观视频工作室": "1889966",
+        "央视军事": "27241419",
+        "中国军号": "32558016",
+        "中国日报": "948448",
+        "春晚": "1922214722",
+        "中国国家地理频道": "22194248",
+        "沈逸老师": "22839724",
+        "中国国家地理景观": "27407498",
+        "新华网": "22102223",
+        "不普通人类实录": "23438970",
+        "国仁全球大学堂": "23296263",
+        "央视网快看": "22142427",
+        "马督工": "22394171",
+        "国防时报TV": "22412808",
+        "中国青年报": "22524476",
+        "环球时报": "796281",
+        "中国火箭军": "21740467",
+        "玉渊谭天": "23342323",
+        "主持人yoyo酱": "25660975",
+        "军武志": "31266297",
+        "央视纪录": "2874230",
+        "大象新闻": "22838098",
+        "快看": "22342243",
+        "军事博物馆": "30180099",
+        "广东共青团": "14361721",
+        "肝帝董佳宁": "22293162",
+        "环球网": "21704811",
+        "浙江共青团": "14875689",
+        "中国警察网": "22691933",
+        "EvanKail埃文凯尔": "1970748631",
+        "奥林匹克运动会": "22801334",
+        "人民海军": "23785155",
+        "司马南": "22507041",
+        "人民武警": "27466494",
+        "中国历史研究院": "22966076",
+        "孤烟暮蝉": "23044837",
+        "金灿荣教授": "23854229",
+        "国家博物馆": "22504916",
+        "国家大剧院": "22252733",
+        "RT今日俄罗斯": "1806665120",
+        "CCTV_国家宝藏": "7144477",
+        "学习强国": "24448807",
+        "故宫博物院": "22821399",
+        "慧小媛": "24320821",
+        "1905放映室": "22728767",
+        "新青年": "11250896",
+        "CNSA中国航天文化": "23885799",
+        "配音演员高全胜": "25995958",
+        "河南共青团": "21378080",
+        "-战舰波将金-": "23146818",
+        "中国反邪教": "3026416",
+        "留声社": "4588754",
+        "人民空军": "22620353",
+        "CRAZY262": "67334",
+        "战忽智库": "21709964",
+        "iPanda熊猫频道": "5269",
+        "四川观察": "22550437",
+        "翟东升老师": "27407705",
+        "尹言说": "21710016",
+        "1818黄金眼": "13171605",
+        "广州禁毒": "25290919",
+        "安柏然Andy": "3906002",
+        "CGTN": "22727001",
+        "边检小花": "22692699",
+        "中国军视网": "22422910",
+        "黄智贤工作室": "22289947",
+        "深圳卫健委": "31974452",
+        "杨叔洞察": "23385758",
+        "中国消防": "22543745",
+        "中国长安网": "21671753",
+        "新西兰三妹Summer": "1772505232",
+        "国家发展改革委": "1777486220",
+        "河南卫视": "22861369",
+        "电影频道融媒体中心": "21685249",
+        "主持人肖雄": "27353488",
+        "央视网选": "10338376",
+        "法医秦明": "24994483",
+        "山东消防": "24225734",
+        "中国联通客服官方": "21505971",
+        "中国新闻网": "30527224",
+        "半月谈": "23265148",
+        "苑举正": "22124111",
+        "徐德智不在联合国": "25073441",
+        "小黛晨读": "31886725",
+        "刘骁骞": "22662573",
+        "我们的太空": "10921840",
+        "记者方浩明": "32753512",
+        "主持人颢鑫": "25646249",
+        "光明日报": "22221608",
+        "高志凯频道": "1939975468",
+        "凤凰网": "22906043",
+        "湖南共青团": "1613232",
+        "中核集团": "22824434",
+        "江西共青团": "22200713",
+        "青蜂侠-Bee": "22721084",
+        "科工力量": "22703389",
+        "国家应急广播": "1819687381",
+        "国家文物局": "30021147",
+        "中国信息支援": "25638964",
+        "席亚洲": "760727",
+        "网易新闻": "24839565",
+        "中国台湾网": "23056427",
+        "央视财经": "4268448",
+        "留学的真相": "866148",
+        "有轶见": "22527293",
+        "辣个董叔": "1730075885",
+        "四川共青团": "22090490",
+        "国资小新": "2865870",
+        "DV现场": "22528436",
+        "中国电影报道": "25338015",
+        "山东卫视": "6900942",
+        "小羊在鲜花舍": "22750871",
+        "李静-健康静距离": "27228658",
+        "中新视频": "4133074",
+        "英国报姐": "3702616",
+        "福建共青团": "22184016",
+        "安徽共青团": "7756693",
+        "河南春晚官方": "22838595",
+        "军武野路子": "22145094",
+        "公安部新闻宣传局": "24123301",
+        "中国日报网": "22530564",
+        "北部联勤兵": "1996445687",
+        "凤凰卫视": "26901731",
+        "中国救捞": "1760816163",
+        "青春山东": "10503397",
+        "中国邮政": "23578471",
+        "一颗冰栗子": "22195882",
+        "中国石化": "23330247",
+        "云南共青团": "22258471",
+        "心智观察所": "21379094",
+        "中国网直播": "10646312",
+        "看看新闻Knews": "5090",
+        "人民视频": "22034114",
+        "辽宁共青团": "21680777",
+        "九派新闻": "24051381",
+        "张经义": "27525355",
+        "苏恒台湾": "27501149",
+        "中国大学生在线": "22347389",
+        "观学院官方": "22583403",
+        "star星视频": "26508329",
+        "电网头条": "21874444",
+        "王炳忠台湾": "27684648",
+        "郑州共青团": "21907402",
+        "圆叔--地方天圆": "1515945",
+        "高端访谈小制片": "32548454",
+        "红星视频": "25939915",
+        "英文主播廖珠": "32521809",
+        "铁翼飞旋": "24303876",
+        "高原战士": "23394469",
+        "军武大本营": "1328104",
+        "中视央广传媒": "22583679",
+        "邱震海": "23159306",
+        "中国能建": "1787125604",
+        "联合国难民署": "1913427439",
+        "黑龙江共青团": "22530369",
+        "江苏共青团": "22185807",
+        "real谷智轩": "22824341",
+        "中国船舶报": "1884961760",
+        "海峡导报社": "24449114",
+        "三联生活周刊": "22404472",
+        "智慧馆长1号": "1827737307",
+        "中国天气": "21611957",
+        "五星体育频道": "22174801",
+        "冰汝看美国": "25661816",
+        "XBIONIC科技": "4579785",
+        "中国三农发布": "22936871",
+        "潍坊警事": "22076212",
+        "科学网": "22925279",
+        "重庆共青团": "5570412",
+        "视听中国": "23153567",
+        "湖南卫视": "24153994",
+        "百岁山不甜pro": "22280743",
+        "中国石油": "27593342",
+        "吉林共青团": "26726253",
+        "农视网": "22936661",
+        "中华书局": "22163474",
+        "山西共青团": "22870227",
+        "贵州共青团": "21621197",
+        "王梦Flyingdream": "22824841",
+        "浙江卫视": "24903351",
+        "红十字国际委员会": "1919952538",
+        "联合国儿童基金会": "22636753",
+        "青春北京": "22513975",
+        "好客山东": "23151435",
+        "甘肃共青团": "22528585",
+        "乌鲁木齐消防救援支队": "23808654",
+        "青春上海": "3214996",
+        "广西共青团": "22718361",
+        "兵器工业集团": "26345664",
+        "视听新时代": "24243456",
+        "敦煌研究院": "22237869",
+        "罐头鉴定师": "1901582671",
+        "军迷天花板杰哥": "23142835",
+        "李翔看世界": "23403428",
+        "武术世界频道": "23057247",
+        "探骊探世界": "22838376",
+        "中国能源报": "27699084",
+        "小莉帮忙": "22047229",
+        "中国消防_原": "23806708",
+        "河南省文化和旅游厅": "24013157",
+        "腾讯新闻": "24486738",
+        "淅川工作犬": "23019662",
+        "动历史": "13864591",
+        "二喜警官": "23627810",
+        "武器大讲堂": "3432021",
+        "何处击": "23149917",
+        "校尉说": "23367556",
+        "中国航空工业集团": "22167473",
+        "广西消防": "22988545",
+        "三联生活实验室": "21990005",
+        "庐州老交": "21758078",
+        "空天逐梦": "22655390",
+        "蜀黍举个栗子": "22997735",
+        "青春湖北": "22934422",
+        "长安街知事": "23499138",
+        "浙江文旅": "1845372273",
+        "科技日报": "22361339",
+        "吾纪录": "21191635",
+        "主持人百克力": "22900406",
+        "海峡新干线": "22335492",
+        "我们的空间站": "22163682",
+        "内蒙古共青团": "22368785",
+        "华山论鉴官方": "26504684",
+        "中国联勤保障": "27220733",
+        "天津共青团": "13819996",
+        "宁南山产业观察": "23035979",
+        "东方今报": "22959105",
+        "胡诌施佬": "23871059",
+        "ZOL中关村在线": "1059135",
+        "辽宁文旅": "31664999",
+        "太平洋科技网": "99877",
+        "Vista看天下": "25827009",
+        "河南民生频道大参考": "22715263",
+        "李肃论道": "22608182",
+        "中国建筑": "24849989",
+        "北京航空航天大学": "4415386",
+        "陕西警方": "24389284",
+        "山西省文化和旅游厅": "25365781",
+        "杨升Alex": "24454566",
+        "燃烧的陀螺仪": "10812012",
+        "我就是那个叫肥肥的": "23449937",
+        "陕西共青团": "3640784",
+        "中车文创": "1778753594",
+        "学信网": "1890951904",
+        "济宁消防": "30541934",
+        "警民直通车上海": "22295056",
+        "和平鸭唐师曾": "1829028316",
+        "百变小琦哥": "23319766",
+        "皮叔呀": "22326133",
+        "天气阿准official": "22622779",
+        "Eva的科技生活": "5115982",
+        "南风窗": "23006033",
+        "新民晚报": "22760413",
+        "街森": "882243",
+        "国家典籍博物馆": "24867074",
+        "中央民族乐团CNTO": "22803968",
+        "橘子娱乐": "5088388",
+        "川观新闻": "22918334",
+        "中国教育电视台": "11401398",
+        "中国野生生物影像年赛": "24004154",
+        "湖北文旅": "30023564",
+        "第一军情": "4594663",
+        "昆明警方发布": "23918155",
+        "央视社教": "6007497",
+        "国家统计局": "1778460574",
+        "无际视频": "24632484",
+        "新疆共青团": "22338133",
+        "苑庆攀": "23407940",
+        "熹天取经": "25867525",
+        "复兴路上": "22530186",
+        "产经破壁机": "1894648454",
+        "徐工集团XCMG": "3899449",
+        "超级语文课": "27366145",
+        "人民文娱": "22184050",
+        "尼尼卡D_renton": "1817653871",
+        "CCTV2第一时间": "4242916",
+        "享椰城融媒体官方账号": "10180582",
+        "翟翾": "26620973",
+        "河南都市频道": "22870003",
+        "健康中国官方账号": "5567254",
+        "上海博物馆": "22241055",
+        "中科院地质地球所": "22182482",
+        "明sir反骗局": "23630911",
+        "东方卫视番茄台": "544865",
+        "中国中医药出版社": "22643004",
+        "梨视频": "2678168",
+        "电影频道1905电影网": "23046247",
+        "封面新闻": "23140035",
+        "今日影评": "2874680",
+        "搜狐新闻": "23140255",
+        "华商报": "25328222",
+        "成都消防": "23902045",
+        "燃新闻": "22456231",
+        "中媒汇": "23333830",
+        "台海网": "24355017",
+        "环球交叉点": "1434480",
+        "人民画报": "22664974",
+        "第一财经": "1521834",
+        "南方都市报": "22265605",
+        "河北共青团": "22942949",
+        "WWF世界自然基金会": "21752633",
+        "央视网体育": "21681618",
+        "浪潮工作室": "4312438",
+        "河南博物院": "23059008",
+        "第1眼新闻": "23173250",
+        "威观点": "23232541",
+        "舒克-宋寅": "22933251",
+        "全国妇联女性之声": "22897658",
+        "反诈宣传员老陈": "23567756",
+        "花花喵喵世界": "3519848",
+        "闪电新闻": "22746037",
+        "海南共青团": "14564027",
+        "中国美术馆": "1748635281",
+        "视界中国CM": "1516502",
+        "都市时报官方": "24243041",
+        "中储粮集团": "23175714",
+        "ToSun记者团": "24232255",
+        "洛阳网": "23716983",
+        "小霜科普": "22694319",
+        "央视网寻味中国": "22052553",
+        "军武吴鑫磊": "3457015",
+        "中国舞蹈家协会": "22704954",
+        "yankeesama的帧察小队": "544955",
+        "牛弹琴": "23026541",
+        "CGTN记者团": "22518740",
+        "河北文旅": "1863472728",
+        "四川文旅": "22881052",
+        "荷花园叉子刘": "32640292",
+        "中国考古": "27658173",
+        "人大重阳官方账号": "21970848",
+        "天下足球": "1756759371",
+        "陕西历史博物馆官方": "22707500",
+        "舰船知识": "24135546",
+        "李静-LIJING": "1722887311",
+        "华宸的飞行日记": "26535016",
+        "江苏卫视": "903864",
+        "深圳卫视直新闻": "22488006",
+        "直播日照": "22853484",
+        "江城武汉帽子叔叔": "21752560",
+        "中国退役军人": "23486034",
+        "南京消防": "24645859",
+        "都市报道": "22852166",
+        "迪拜中阿卫视": "27041627",
+        "兵团日报": "1809236804",
+        "光明网": "8662536",
+        "中国青年网": "24804898",
+        "人物杂志": "32265367",
+        "芜湖共青团": "22063013",
+        "中国科学技术馆": "23039708",
+        "网易科技频道": "23299190",
+        "主持人王宁": "24234049",
+        "甲15号研究所": "24447892",
+        "广东公安": "22191626",
+        "小欣漫画": "23749412",
+        "田柳观察": "22898832",
+        "SMG案件聚焦": "24048391",
+        "魔都科学目录": "24818540",
+        "爱范儿评测": "97559",
+        "晨视频晨世": "23491990",
+        "宝藏猎人董臻": "21866426",
+        "国家应急科普宣传": "1830534458",
+        "动新闻": "22737065",
+        "国聘": "25817552",
+        "中国移动": "31411728",
+        "中国文字博物馆": "25008720",
+        "环球时报-Get中国": "2992382",
+        "旅途": "22650708",
+        "极目新闻": "23143915",
+        "中国围棋协会": "27698240",
+        "美丽浙江": "30596270",
+        "杭州和事佬": "32583923",
+        "群众新闻": "24461337",
+        "新周刊Neweekly": "22365935",
+        "上海自然博物馆": "22136653",
+        "四川卫视": "22713490",
+        "深圳卫视": "710753",
+        "人民日报全国党媒平台": "3785813",
+        "海南海事": "1836262507",
+        "联合国开发计划署": "23835843",
+        "健康广东": "21519713",
+        "湖南福彩": "32373391",
+        "宋忠平": "445182",
+        "侠客岛": "23230180",
+        "中国丝绸博物馆": "22246643",
+        "江宁婆婆": "545305",
+        "边境阿呱": "23708860",
+        "光头竹老师": "9377664",
+        "云南省博物馆": "23850821",
+        "被绿色迫害的张立齐": "31577357",
+        "中国银联官方": "23525468",
+        "北京日报": "22238497",
+        "法治日报": "21473781",
+        "水韵江苏": "24884577",
+        "新闻姐": "25506270",
+        "CMG观察": "23847338",
+        "此城此警": "26524731",
+        "广东卫视": "3146703",
+        "中国安能-水电铁军": "24961773",
+        "刘乐妍工作室": "9044803",
+        "中国应急管理": "1706660507",
+        "南京云锦研究所": "22368977",
+        "中国新疆网": "31847110",
+        "记者王冠": "23053018",
+        "地中海边的白房子": "31669833",
+        "济南市消防救援支队": "24531671",
+        "中国蓝新闻": "22572076",
+        "清新福建文旅之声": "25945232",
+        "中国国家话剧院": "22549359",
+        "羊城晚报": "25077021",
+        "江西卫视": "22463689",
+        "上海戏曲广播": "22024472",
+        "云南网官方视频": "27560920",
+        "福州消防": "23820370",
+        "中国海洋大学": "6322081",
+        "中国南方航空": "23564805",
+        "萍乡消防": "1894643076",
+        "帮帮团V直播": "21531606",
+        "李淼的日本观察": "23307004",
+        "甘肃消防救援机动总队": "22993320",
+        "邱文平": "1972018198",
+        "农民日报": "25593494",
+        "长江日报": "27778529",
+        "大公文汇全媒体": "24059777",
+        "雨朦和雨彤": "22123988",
+        "上海消防": "23475388",
+        "中国工业报": "21558349",
+        "BRTV新闻": "1322606",
+        "新科动漫频道": "734360",
+        "中国社会科学网": "23192677",
+        "青聚锦官城": "23749504",
+        "都市频道打鱼晒网": "22966637",
+        "有数青年工作室": "22358935",
+        "青春鄂州": "1977296991",
+        "云南日报": "25209916",
+        "三橙视频": "4048964",
+        "澎湃新闻": "22712526",
+        "平安宁夏": "26397625",
+        "五星体育": "32065416",
+        "文物宝库频道": "21565998",
+        "中国正在说": "4586700",
+        "浙江经视风云浙商": "12714663",
+        "新闻晨报": "24059690",
+        "凤凰全球观察团": "25150874",
+        "如意甘肃": "26074304",
+        "海南热带雨林国家公园": "23971582",
+        "广州交通电台": "23201662",
+        "风闻": "1763021301",
+        "动静贵州": "2683448",
+        "皮卡丘的莫拉": "761265",
+        "平安绵阳": "23624998",
+        "RT小姐姐阿丽娜": "1918799108",
+        "车长来了": "1849255366",
+        "上海地铁": "1552351",
+        "朱迅": "1944728949",
+        "学者马国川": "1735720939",
+        "今视频长天新闻": "31034982",
+        "苏州博物馆": "22040316",
+        "天平阳光": "22539702",
+        "传说中的600号": "25105325",
+        "扬子晚报": "1931435756",
+        "腾讯研究院": "12572155",
+        "青春大连": "24323641",
+        "甘肃政法": "23628322",
+        "武汉市文化和旅游局": "22308089",
+        "山西教育杂志社": "32312142",
+        "洛阳共青团": "23841012",
+        "中国绿会": "22120963",
+        "河南公共频道": "23089704",
+        "杭州第19届亚运会": "30065915",
+        "口也是老贾口牙": "31867943",
+        "临沂消防": "24841189",
+        "东南卫视": "22599899",
+        "中国民族博览": "21564831",
+        "中国知识产权培训": "27518512",
+        "Flora洋叮叮": "23133394",
+        "叙世计划": "5345640",
+        "畅赏黑龙江": "30579614",
+        "华华不高冷": "23069148",
+        "大眼笛子": "24549517",
+        "史一棋": "25714825",
+        "中信出版": "22354465",
+        "粤TV": "24275797",
+        "贵州2频道百姓关注": "25771031",
+        "全荃": "24804194",
+        "北京卫视": "31661532",
+        "王迪迩DEER": "24390634",
+        "白鹿视频": "23986231",
+        "梨园春官方": "22899345",
+        "小彭彭译萱": "23627736",
+        "瑞士国家旅游局": "23812118",
+        "中国网视频": "22412236",
+        "边警某sir": "24300437",
+        "中国科学院上海天文台": "23097317",
+        "CCTV世界地理": "1826349522",
+        "中国国家地理文旅": "1940899751",
+        "日本国驻华大使馆": "4242926",
+        "动静新闻": "22746747",
+        "解读中国": "2291321",
+        "河南省教育厅": "23117636",
+        "南越王博物院": "22090317",
+        "凤凰霍伟伟": "22150711",
+        "你的充气小白兔": "22167250",
+        "北美崔哥": "23577063",
+        "国图公开课": "26280955",
+        "弯区兄弟": "26131950",
+        "电脑报": "4102187",
+        "科学辟谣": "27639480",
+        "中国考古报道": "2677181",
+        "配音演员cv池凡": "27388708",
+        "中国钱币博物馆": "1748634352",
+        "广东粤剧院": "24492026",
+        "赛博研究所": "1809422986",
+        "中国日报青年频道": "23358911",
+        "新之AKIRA": "553256",
+        "重庆监狱": "31759166",
+        "万能路灯": "22119970",
+        "津云": "22743858",
+        "山东电视综艺频道": "32634469",
+        "南方Plus": "22078631",
+        "每日经济新闻官方": "23095342",
+        "绍兴青年": "22405259",
+        "半铖品声优": "96409",
+        "月生春": "10975535",
+        "广东民声热线": "32306381",
+        "中国教育报": "23236706",
+        "文物陕西": "25237161",
+        "钱江纪录": "13986925",
+        "局外人视频": "24578448",
+        "温十楼": "25289483",
+        "冀时新闻": "27032303",
+        "火大青春": "22812822",
+        "硅星人Pro": "23845804",
+        "经济观察报": "23299431",
+        "广州日报": "22867248",
+        "江夏共青团": "22439464",
+        "正义网": "24241733",
+        "中车株洲所": "25750217",
+        "广州共青团": "22167784",
+        "中国经营报": "22870623",
+        "齐鲁频道": "24910930",
+        "中国航海博物馆": "22595663",
+        "旭岽叨科学": "1775061135",
+        "看航空": "4102402",
+        "上海二中院": "23239837",
+        "佩奇科娃": "26544965",
+        "每日人物": "24811776",
+        "中国国家地理探索": "24813226",
+        "高嵩的高山": "23088746",
+        "环球高人访": "22275009",
+        "和陌生人说话Talktoher": "5065213",
+        "唐颖Orr": "25565583",
+        "中国科学院院刊": "25976942",
+        "云南广播电视台": "26917399",
+        "环球人物": "1373189",
+        "青春外交": "22573888",
+        "于惊惊的口袋笔记": "22902848",
+        "英国驻广州总领事馆": "7652389",
+        "中科院青藏高原所": "22674055",
+        "浦江美警": "26859490",
+        "青春武汉": "22311323",
+        "张昊泽zhz": "24827196",
+        "上海戒毒": "22341262",
+        "中国电信": "23221891",
+        "北大王勇教授": "26515174",
+        "地球之极侣行": "23714556",
+        "文艺中国": "24264243",
+        "王晋博士": "24568068",
+        "小警聪花": "23471065",
+        "上游新闻": "25734686",
+        "风景园林杂志": "23913246",
+        "兵团号": "31273206",
+        "城市进化论": "22506825",
+        "桂林生活网": "23482874",
+        "共青团攀枝花市委": "25304540",
+        "辽宁卫视": "1785940420",
+        "数学与系统科学研究院": "32752877",
+        "XCMG徐工起重": "22786960",
+        "驻英媒体人徐量": "23625663",
+        "日喀则文旅": "30916439",
+        "未来实验室": "1492422",
+        "新派世角": "1746147596",
+        "骑纪不倒温": "22688285",
+        "长春新闻": "1823574018",
+        "朱朱女侠日记": "24342956",
+        "所长bibabo": "14483542",
+        "荔枝新闻": "1324213",
+        "山西卫视": "31801996",
+        "三明消防": "25053235",
+        "佛山市文化馆": "23060250",
+        "朱梓橦十二维度": "6319511",
+        "萧武在此": "22487571",
+        "智东西": "276457",
+        "李子涵Liz": "23598284",
+        "海博TV": "31996445",
+        "北京时间": "31514013",
+        "西藏广播电视台": "1914112248",
+        "网易谈心社": "27325990",
+        "中国气象": "22306993",
+        "潮起敦煌": "1884960678",
+        "央视台球": "27689823",
+        "湖北日报": "24435730",
+        "海报视频": "22647694",
+        "湖南教育电视台": "1878510806",
+        "解放日报-上观新闻": "25983271",
+        "麓山戒毒": "30131246",
+        "江西风景独好": "25236250",
+        "魔都电竞人": "22370082",
+        "这里是东昊": "24846971",
+        "内蒙古广播电视台": "26153598",
+        "老板联播": "9007287",
+        "湖南卫视新闻": "1844417093",
+        "沸点视频": "22035480",
+        "張宗真": "1819687512",
+        "自信中国说": "25888298",
+        "行哥嘚啵嘚": "23920708",
+        "王又又WANGYOUYOU": "21546631",
+        "央视一套机智过人": "21496744",
+        "CRO应急搜救犬中心": "1803520429",
+        "上海网警": "30253625",
+        "广州艺术博物院": "22144592",
+        "中国广核集团": "22394632",
+        "齐鲁晚报-齐鲁壹点": "23019859",
+        "尤志东": "5244876",
+        "龙岩市融媒体中心": "23798790",
+        "深圳龙岗发布": "26423900",
+        "青春襄阳": "23985028",
+        "延边晨报": "24265210",
+        "国家图书馆": "32482226",
+        "福建日报社东南网": "27377870",
+        "LIAI李艾": "1754796349",
+        "小猴子喜乐多": "22820262",
+        "台海时刻": "1774681665",
+        "局势君": "2294210",
+        "中国科学院新疆生地所": "24991611",
+        "黄金眼融媒": "21315032",
+        "陕西卫视": "24228809",
+        "新疆是个好地方": "1846980995",
+        "气象知识": "5488580",
+        "三联中读": "22115663",
+        "村BA官方": "25876429",
+        "北京市文化馆": "27754377",
+        "力学学报": "23946273",
+        "荔直播": "22094017",
+        "江西省博物馆": "22544276",
+        "吴健评论员": "1980122990",
+        "海口市旅文局": "1911275465",
+        "吉祥新闻": "1951977228",
+        "中国妇女网": "31450842",
+        "掌上高考": "22784284",
+        "永不消逝的电波": "30494570",
+        "山东体育休闲频道": "23984206",
+        "看度新闻": "22621305",
+        "央视新闻直播间1": "21790660",
+        "村游团": "22436661",
+        "中国大唐": "1993209219",
+        "苏e直播": "26185554",
+        "开始懂了吗懂了吗": "23019645",
+        "中国科学家博物馆": "1772921896",
+        "央视网文化": "30820087",
+        "金鹰纪实-": "1521570",
+        "FreeBuf官方账号": "12865680",
+        "复旦大学附属华山医院": "25982631",
+        "深圳图书馆": "22702527",
+        "左小美喵": "2434597",
+        "上海动物园": "25584924",
+        "高不涨": "6534083",
+        "辽宁日报": "23807030",
+        "开封文旅": "22944090",
+        "英国驻上海领事馆": "2458394",
+        "央视网美学": "24498476",
+        "遇见小诺": "31385298",
+        "李旭的散装生物学": "25241929",
+        "长城新媒体": "24200384",
+        "英国大使馆文化教育处": "4293477",
+        "向游看齐": "23932232",
+        "抽屉视频": "26473853",
+        "蓝纪录": "4293452",
+        "中国企业家杂志": "21966449",
+        "民宿推荐官": "22516024",
+        "天山网": "1867550304",
+        "海南消防": "31948575",
+        "主持人官琳": "313663",
+        "蝌蚪五线谱官方": "21706613",
+        "南京青春杂志社": "31695521",
+        "瑞私拜talk": "23512631",
+        "采睿睿的小蘑菇": "22975573",
+        "体坛电竞": "22594187",
+        "Biu比由": "30232638",
+        "微言教育": "31948317",
+        "西藏文旅": "1895284365",
+        "火器控视频": "6096026",
+        "三沙卫视": "25742673",
+        "洛阳-旅游": "24046399",
+        "南京广播电视台": "21925697",
+        "浙江图书馆": "22541699",
+        "掌上济宁": "1919123194",
+        "浙里爱上真理的味道": "1786267037",
+        "祥源齐云山度假区": "1700899188",
+        "小强热线官方": "22608234",
+        "中原科普": "30559034",
+        "陕视新闻": "21783940",
+        "中泰头条APP": "3962136",
+        "新黄河": "23945738",
+        "烟台TV": "27735243",
+        "龙视频longshipin": "31494090",
+        "九寨沟景区": "23608566",
+        "小琦警官": "23453586",
+        "重庆卫视": "1851659438",
+        "珊妮儿吃东西": "1763570162",
+        "青春普陀": "22137868",
+        "聊城日报": "24073443",
+        "第十四届全运会": "22144246",
+        "李睿在伊朗": "1724154136",
+        "央视文旅": "31909536",
+        "静安新青年": "21535363",
+        "石甫天": "24086002",
+        "陕西文艺": "23596943",
+        "国家人文历史": "22538713",
+        "健康护万家": "27680850",
+        "荆芥视频": "27202190",
+        "于泓食之乎": "1909412405",
+        "重庆文体娱乐频道": "1786414165",
+        "戏卷天下": "1986382225",
+        "上饶融媒": "1843661391",
+        "浙江聚焦": "22160017",
+        "何岩柯": "25294600",
+        "南国早报": "22617921",
+        "广东工会": "24233198",
+        "多彩泗阳": "1803293127",
+        "江南都市报": "32610812",
+        "东方电气集团": "1809234855",
+        "上海交通": "22366861",
+        "张胜春警官": "1712255658",
+        "铁与火-白孟宸": "22205115",
+        "科技视讯": "2020573",
+        "北京人民艺术剧院": "25158714",
+        "媒体人解飞": "23044376",
+        "平顶山共青团": "1882301497",
+        "都市现场": "25553875",
+        "老迪中肯": "13838395",
+        "樊波成": "23185980",
+        "中航工业集团公司": "2910166",
+        "思路打开MindStream": "1722699950",
+        "哈尔滨第9届亚冬会": "32484288",
+        "直播宜昌": "24032985",
+        "上海检察": "31036212",
+        "小杜大世界": "26282208",
+        "青春中关村": "22217911",
+        "生活帮": "1728611976",
+        "道中华": "26399002",
+        "双语记者一球儿": "23195765",
+        "Z视介APP": "801489",
+        "安徽台海豚君": "21972984",
+        "悦风雅JoyWithGrace": "1863725148",
+        "祁连山国家公园": "30842710",
+        "跟拍FollowUp": "32072142",
+        "法国文化": "22631858",
+        "主持人周正": "32411851",
+        "外交党建在线": "23359154",
+        "上海徐汇": "22592139",
+        "俞洁讲武堂": "32584857",
+        "杭州爱乐乐团": "22217525",
+        "小彻说": "3505275",
+        "电力系统自动化": "26661598",
+        "央视频汽车": "1819685774",
+        "沧州共青团": "22305992",
+        "民声面对面": "25120119",
+        "这里是客家": "24498964",
+        "1站视频": "27153177",
+        "观观观察局": "25147542",
+        "明珠新闻": "22673074",
+        "海峡卫视": "23819981",
+        "中央气象台": "7893899",
+        "秀我中国": "1968486467",
+        "电台主播筱筱": "21024466",
+        "厦门广电": "22294473",
+        "考古陕西": "25036889",
+        "环球银幕": "7588762",
+        "央视科教": "24241688",
+        "央视新闻直播间2": "21792646",
+        "连警小哥": "5802533",
+        "记者常新宇": "27922626",
+        "人民中国": "22587367",
+        "山东卫视此时此刻": "7960545",
+        "房宽在采访": "23479350",
+        "现代广告杂志社": "26228957",
+        "澎湃有戏": "3737672",
+        "果子Albert": "1917445989",
+        "周大歌": "1882769919",
+        "中国国家地理城市地理": "26374853",
+        "上海市群众艺术馆": "22300833",
+        "中国留学服务中心": "22225422",
+        "于强老师": "3212335",
+        "中国科学院青岛能源所": "22351045",
+        "烟台新闻": "30982881",
+        "陕西师范大学哲学书院": "25576848",
+        "华豫之门官方": "22891661",
+        "深圳疾控": "5498640",
+        "定西消防": "32624124",
+        "广东科学中心": "25785517",
+        "汇眼识法": "22300354",
+        "专门网": "21657539",
+        "上海人社": "22278067",
+        "蓝鲸边检": "26257204",
+        "了不起的实验室": "24696928",
+        "海南卫视": "26619313",
+        "小妮在江西": "1741661538",
+        "小说月报": "26288539",
+        "国家自然博物馆": "1857896605",
+        "大河财立方": "23323194",
+        "中国科学院声学研究所": "27746476",
+        "国是直通车": "23104499",
+        "泸州青年": "22621699",
+        "凤凰网纪录": "22334906",
+        "中国国际象棋协会": "30222817",
+        "娜娜Alena": "32444633",
+        "cctv热线12": "4463914",
+        "大象直播间": "23090534",
+        "新余文旅": "1875092679",
+        "在临沂": "22794867",
+        "山东省第26届运动会": "1895735728",
+        "开封网": "23180286",
+        "广东省博物馆": "22407125",
+        "一虎一念": "1819684167",
+        "湖北消防": "23808519",
+        "成都博物馆": "25740914",
+        "导演徐逸曈": "23075109",
+        "我是小短": "32369787",
+        "思远军事": "4407501",
+        "海西晨报": "24806444",
+        "南方农村报": "1912481791",
+        "新民歌大会": "27648897",
+        "佛山新闻网": "22348792",
+        "观威海": "30699445",
+        "柏林旅游局": "5301275",
+        "通信产业报网": "23941800",
+        "闽超FJCL": "1722698863",
+        "陶冶Matt": "26715636",
+        "纳米研究": "23812687",
+        "新浪科技": "3331480",
+        "新闻同学": "24138312",
+        "海上名医": "22160726",
+        "容我想想BJD": "23511223",
+        "凤凰网科技": "22595964",
+        "宁波发布": "1995138342",
+        "东莞教研": "27005052",
+        "上海高院": "23808205",
+        "西安eTV": "30321809",
+        "话匣子FM": "26260994",
+        "联合国人口基金": "25733285",
+        "正在新闻": "1906086293",
+        "大象财富": "23140552",
+        "中国科学院兰州化物所": "23105889",
+        "开源之夏": "27680796",
+        "正观新闻": "22943069",
+        "深视新闻": "22470609",
+        "宁波晚报": "24363922",
+        "生态环境健康EEH": "25002335",
+        "知几警官": "23387267",
+        "北京科技报": "21733211",
+        "青年公社go": "5428043",
+        "中科院南海海洋研究所": "24993309",
+        "消费者报道": "1505375",
+        "新京报贝壳财经": "22142043",
+        "观网游戏": "1883018651",
+        "大众新闻": "1917441586",
+        "工程热物理所教育": "22347629",
+        "戏剧东城官方": "22211051",
+        "这一站贵州": "30046496",
+        "深圳普法": "26558962",
+        "广西图书馆": "22519192",
+        "中国国家地理无尽之藏": "1729382454",
+        "巴州融媒": "23512318",
+        "台州交通广播": "23495209",
+        "厦门日报": "24345845",
+        "默默有文-主播张默": "23004248",
+        "上海市青少年活动中心": "22234877",
+        "老年Paladin": "24251625",
+        "江南共青团": "24043067",
+        "霹雳火军事": "4359814",
+        "齐鲁频道拉呱": "22972870",
+        "华中科技大学出版社": "23173187",
+        "中科院生态环境中心": "25055034",
+        "珠海UP": "25090304",
+        "中国象棋协会": "30394644",
+        "工业文化发展中心ICDC": "23673903",
+        "国家金融与发展实验室": "22513735",
+        "东张西望工作室": "32560258",
+        "石家庄图书馆": "24746808",
+        "人民日报健康客户端": "22988703",
+        "中国园林博物馆": "30755320",
+        "明十三陵管理中心": "1879187702",
+        "Mandan9523": "31663231",
+        "浙江交响乐团": "1895286762",
+        "纵相": "25671488",
+        "桂林日报": "25815960",
+        "内蒙古文化和旅游厅": "1954823135",
+        "竹幼婷在芬蘭": "31272758",
+        "青春宜昌": "1977298741",
+        "冲哥瞰天下": "1940893476",
+        "北京市文联": "31785238",
+        "五星体育广播FM940": "26482688",
+        "CCTV风云音乐": "1921501810",
+        "主持人海阳": "23194658",
+        "凤凰网军事": "1931432200",
+        "拍天气的lao姐姐": "866725",
+        "子沐雨霖": "27571843",
+        "界面Vnews": "22695327",
+        "复旦附属妇产科医院": "22518856",
+        "顶端新闻": "23456904",
+        "联合国艾滋病规划署": "25671429",
+        "醒目视频": "22705339",
+        "城乡规划杂志社": "22458850",
+        "中国美术报": "30618924",
+        "AIR-FANTASY": "22933733",
+        "江苏交通广播网": "22702148",
+        "温州博物馆": "22370242",
+        "特种铸造": "25714754",
+        "黄金三十分": "22974334",
+        "青春通化": "22465576",
+        "半岛都市报": "22570982",
+        "华南国家植物园": "1828272609",
+        "湖南卫视天天向上": "23885903",
+        "甜茶聊天室": "22758185",
+        "鞍钢集团": "1803526894",
+        "无限台州": "25205911",
+        "扬州发小布": "1749144137",
+        "丹哥会叨叨": "30069023",
+        "今吴江": "31374910",
+        "中山青年": "6320215",
+        "南宁广播电视台": "24000171",
+        "识象": "24441075",
+        "江西移动电视": "30676590",
+        "周口广电融媒": "22534298",
+        "隋唐洛阳城景区": "22327898",
+        "建邺播报": "22688743",
+        "中国网络视听盛典": "1939499644",
+        "八卦男友": "22660444",
+        "第一现场": "22239050",
+        "真香惠子": "27021462",
+        "西海都市报官方": "25412207",
+        "青海新闻联播": "30588819",
+        "山西省古建院": "32523542",
+        "衡阳发布": "25125039",
+        "河南新闻广播": "23203257",
+        "意大利国家旅游局": "4831624",
+        "育见新闻": "22362939",
+        "中国科学院深海所": "25007281",
+        "收获文学杂志社": "1819585748",
+        "TrendZ自习室": "25204644",
+        "蚌埠日报": "1781251016",
+        "上海市血液中心": "24452491",
+        "西藏女性": "21507205",
+        "上海城市空间艺术季": "23667346",
+        "来点财经范儿": "24185664",
+        "陕西都市快报": "23692794",
+        "摄影参考资料": "22293154",
+        "观察眼浙里看": "21993162",
+        "上海科艺中心": "22415559",
+        "健康报社": "22292678",
+        "大同教育电视台": "23945899",
+        "广西卫视": "745012",
+        "长安电教": "22905872",
+        "首都防震减灾宣教中心": "23672414",
+        "中国航天文创": "22407430",
+        "津南消防救援支队": "1890954727",
+        "重庆图书馆": "26228667",
+        "浙江大学上海高研院": "24209800",
+        "我们一起写诗": "27322013",
+        "汉堡驻中国联络处": "22029813",
+        "古都对话": "30066312",
+        "麦穗视频": "25356716",
+        "中国魔方运动": "1751761821",
+        "小海同学的有生之年": "25134713",
+        "央视致富经": "10338550",
+        "东莞plus": "30945666",
+        "青春宁波": "10463241",
+        "圆周率_Pi": "27593130",
+        "杨浦税务": "22166126",
+        "云端对话栏目": "22272046",
+        "淮北市传媒中心": "24584293",
+        "向南看": "21904913",
+        "我们调查": "1790095380",
+        "生态环境部宣教中心": "23478170",
+        "河南省文化旅游手机报": "23197809",
+        "平潭融媒体中心": "23955164",
+        "四季书橱": "1993294753",
+        "一带一路网": "10901622",
+        "中央民族歌舞团": "22699895",
+        "成都交响乐团": "24201147",
+        "重庆时间": "5370813",
+        "陕西1频道": "4292330",
+        "西班牙国家旅游局": "4840094",
+        "零时差工作室": "21419275",
+        "浙视频": "4462965",
+        "曹兴教授": "31014617",
+        "地球科学编辑部": "31630038",
+        "天眼新闻": "31635929",
+        "杨大上头": "22542509",
+        "贵州民族报": "1724235996",
+        "京彩台湾": "1819686716",
+        "山东电视文旅频道": "23816777",
+        "中国体育直播TV": "23405950",
+        "人民日报海外网": "1748138449",
+        "红网": "32235562",
+        "沪台通": "22578581",
+        "乐业杨浦": "22060462",
+        "建瓯青年": "22196625",
+        "计算机科学技术学报": "27821882",
+        "白天晴dark": "22951619",
+        "中国财政科学研究院": "24199157",
+        "石棉融媒": "1803291105",
+        "全景网": "22470018",
+        "山东教育电视台": "1978006752",
+        "孙狮醒": "22876974",
+        "哈尔滨日报": "1756750757",
+        "吴薇观察": "5109482",
+        "无锡市人才服务中心": "25757549",
+        "广西卫视唱响新时代": "8431100",
+        "云南卫视": "738386",
+        "深圳电影厂": "30922405",
+        "保定自然博物馆": "31653650",
+        "梁田-Eliza": "24954052",
+        "V哥看天下": "22683045",
+        "福建台直播福建": "25646836",
+        "上海科技官方账号": "24499056",
+        "bili_183746281": "833195",
+        "吉视春晚探班员": "1882950053",
+        "昌平实验室": "1916507384",
+        "中科厦门研究院": "23913668",
+        "视听四川": "1939499334",
+        "杭州文广": "1608650",
+        "南越王宫博物馆": "22386250",
+        "北京时间直播": "21765720",
+        "环球旅讯": "23158735",
+        "求真哥": "22590495",
+        "天津消防研究所TFRI": "22925473",
+        "波兰旅游局": "24249117",
+        "中山大学附属第一医院": "25412721",
+        "记者海林": "25888469",
+        "宜春福彩": "1856654606",
+        "青春十堰": "1977295913",
+        "中国家庭报": "27425702",
+        "风起莫干山": "22328383",
+        "北京银行": "30460737",
+        "国学小名士": "25394269",
+        "小李的第三人生": "1788391945",
+        "西安交通大学口腔医院": "27689453",
+        "龙小边儿": "26758343",
+        "意大利使馆文化处": "5530762",
+        "大众网青岛": "25065846",
+        "财经杨埼": "23380777",
+        "施政工作室": "24952258",
+        "爱情像满天的流星雨": "23286117",
+        "范明远": "14768853",
+        "IDEA研究院": "23847305",
+        "崇明区融媒体中心": "30578697",
+        "文旅兵团": "24053480",
+        "央广健康": "4275441",
+        "山东省图书馆": "1833447950",
+        "十堰晚报官方账号": "21461555",
+        "评论员王攀": "1777436281",
+        "新民周刊": "23014044",
+        "西安发布": "22072741",
+        "沿着边境看中国": "1827709997",
+        "云听APP": "22236090",
+        "南充融媒": "22622930",
+        "瑞典旅游局": "22387909",
+        "中华有好戏": "1883379681",
+        "立东Talk": "9694043",
+        "美国高娓娓": "23139295",
+        "爱济南客户端": "23176303",
+        "中国科大附一院": "22383294",
+        "广东体育频道": "25879622",
+        "枝江融媒": "1843663778",
+        "湖北福彩": "1748132918",
+        "中国宋庆龄基金会": "22567296",
+        "锅船长旅行日记": "27848484",
+        "奥地利驻华使馆文化处": "11167086",
+        "北京考试报": "22347254",
+        "上海气象博物馆": "22003906",
+        "投资上海": "26265227",
+        "杭州图书馆": "22461552",
+        "主持人肖东坡": "25112998",
+        "中国东方演艺集团": "27884795",
+        "中国建筑设计研究院": "25454504",
+        "我是延安": "22250936",
+        "南都直播官方账号": "21763147",
+        "文科理老师": "31115082",
+        "常德日报": "11758528",
+        "1818小记大麦": "24488670",
+        "爱飞飞机的丁丁": "1152962",
+        "书香上海": "22295481",
+        "云南省健康宣教中心": "4689608",
+        "江苏寄生虫病防治": "22419920",
+        "万有引力UG": "26366649",
+        "楠竹一": "4395280",
+        "凉山文旅": "1906339192",
+        "重庆广播电视台": "30103418",
+        "青春高邮": "11602037",
+        "加拿大温哥华旅游局": "4873671",
+        "吴非教授": "1755374924",
+        "靖江市融媒体中心": "22938486",
+        "四川教育在线": "1724233113",
+        "书城杂志": "22149673",
+        "SBS暖视频": "22825934",
+        "郭洋子Yoko": "23563229",
+        "一大纪念馆": "26283449",
+        "通信世界": "22212872",
+        "视听海南": "22837938",
+        "拉萨市融媒体中心": "22016753",
+        "青春萧山": "22259324",
+        "好品山东官方账号": "1881911588",
+        "福建商务": "26636559",
+        "WOW财经": "23423411",
+        "荔枝纪录": "4304110",
+        "东莞科学馆": "23878275",
+        "苒情岁月-厉苒苒": "1811403882",
+        "杨浦文旅": "10548686",
+        "新华社直播备路1": "23135692",
+        "OCT华侨城": "22491359",
+        "中国吉林网": "22643223",
+        "智八斗": "30741523",
+        "牡丹晚报": "14558962",
+        "申度新闻": "1741187961",
+        "商丘广电大型活动": "24243607",
+        "杨浦老干部": "22323785",
+        "东方烟草报": "24787339",
+        "延边广播电视台": "31957710",
+        "趣识财经": "10246484",
+        "中青教育": "25247228",
+        "中国旅游TV": "443595",
+        "河南交通广播": "25343030",
+        "散装科学家老刘": "32234780",
+        "一点资讯官方账号": "23359936",
+        "超圆的天天": "22978011",
+        "杨浦区卫健委团工委": "22217491",
+        "然哥说事儿": "31373573",
+        "中吴网": "22084348",
+        "何香凝美术馆": "22371319",
+        "中国煤矿文工团": "26750565",
+        "YNTV2都市条形码": "12950823",
+        "喜欢上海为你SEAHi": "25988997",
+        "不时不食视频": "22226761",
+        "陕西省关工委": "27636836",
+        "东方艺术plus": "26847757",
+        "杭州网": "22637108",
+        "今日闵行": "26185617",
+        "奉化人才": "22454352",
+        "瑞士琉森旅游局": "4887984",
+        "青春金华": "22239243",
+        "柳河县融媒体中心": "27274506",
+        "中国驻瑞士使馆": "24252033",
+        "朝阳检察": "10747508",
+        "中国黄金报": "22292430",
+        "天视第六频道": "27096965",
+        "萧山融媒": "1814863453",
+        "平顶山广播电视台": "31872040",
+        "北大重庆大数据研究院": "23950431",
+        "青春巴州": "22258792",
+        "河南省洛阳正骨医院": "25397008",
+        "黎川发布": "24027749",
+        "南沙区图书馆": "25810557",
+        "舒月读书": "32480848",
+        "社科中国": "31647377",
+        "湖南体彩": "30699639",
+        "Macau传播力": "22906415",
+        "大运河传播": "25893647",
+        "雁冬闻道": "30999578",
+        "富蕴融媒": "22746709",
+        "成才与就业": "22359995",
+        "鄂尔多斯市乌兰牧骑": "23615011",
+        "中国环境报社": "1852776109",
+        "科学数据银行ScienceDB": "26591582",
+        "权视界YoungWave": "21681479",
+        "长安街读书会": "23027542",
+        "我爱外滩": "22349030",
+        "浙江省血液中心": "23666443",
+        "国子文脉": "26855348",
+        "青春江岸": "25331068",
+        "上海通志馆": "26853922",
+        "佛山电台": "5491694",
+        "通信信息报": "25488778",
+        "现代教育报": "22374070",
+        "新疆卫生健康宣传教育": "1700651856",
+        "承德网媒": "10146267",
+        "三门峡广播电视台": "23979594",
+        "荔枝读书会": "22353523",
+        "武汉洪山检察": "22822248",
+        "浙江省眼科医院": "25016311",
+        "青年北仑立业之城": "22459269",
+        "中国报道": "22284755",
+        "医药地理": "25365189",
+        "毛妹叨叨叨": "22991750",
+        "湖南经视官方账号": "22169856",
+        "塔斯马尼亚旅游局": "22250297",
+        "徐州市红十字血液中心": "24007601",
+        "李弘昆台湾": "22457021",
+        "成都肛肠专科医院": "7282043",
+        "湾区青创汇": "23098357",
+        "杨浦区融媒体中心": "22180907",
+        "青春綦江": "22675124",
+        "一颗豆柠": "23844277",
+        "这里是潍坊": "25977002",
+        "冀小兰-河北档案": "12117233",
+        "长治和平医院": "1182629",
+        "观临海": "22822470",
+        "中国风景名胜区协会": "1896521763",
+        "足球世界": "25613695",
+        "孙成昊SCH": "1910847166",
+        "钟祥市融媒体中心": "22225898",
+        "青春泰州": "23466859",
+        "广州海洋实验室": "3557458",
+        "天下泉城客户端": "31539036",
+        "健康中国观察": "23519010",
+        "太原市融媒体中心": "22760180",
+        "青春道外": "22502940",
+        "吉视频": "31262579",
+        "济宁广电": "26829500",
+        "我是番茄很甜": "3359674",
+        "宁波江北人才中心": "22505098",
+        "凤凰网行动者": "32406831",
+        "今日永州": "30392724",
+        "奉贤区博物馆": "22519313",
+        "苹果视频": "21494568",
+        "我爱爆料": "21725690",
+        "东方智库": "25976994",
+        "电竞安徽": "1792596617",
+        "三林镇社区文化中心": "23034612",
+        "董卓翰": "31096827",
+        "圳论工作室": "14928515",
+        "广中医三院": "22471419",
+        "徐汇文旅": "22626418",
+        "CFETSYouth": "22252217",
+        "天台传媒": "31105636",
+        "湖南高院": "30163245",
+        "山西省人民医院": "23665720",
+        "湖北省地质科学研究院": "14547812",
+        "魔都三棱镜": "32807489",
+        "温和的曜曜要睡觉": "22900547",
+        "福建省梨园戏传承中心": "22400288",
+        "龙岗青年": "24927535",
+        "更龙江": "21011836",
+        "海都君": "21720444",
+        "蓝鲸财经记者工作平台": "4085156",
+        "中国网物联中国": "22372351",
+        "天山区融媒体中心": "24200091",
+        "苏州生活广播": "23452409",
+        "武汉晚报": "32515005",
+        "辽视TV": "1805924789",
+        "爱筑湖院": "23998517",
+        "PDTV探视频": "10481559",
+        "留学杂志": "22589331",
+        "中国双拥": "1777649759",
+        "蕉岭青年": "24134658",
+        "福鼎市图书馆": "25706262",
+        "青创龙游湖": "25756805",
+        "青春渝北": "23974615",
+        "中国蓝帮帮团": "27935112",
+        "国际青年领袖对话GYLD": "25456073",
+        "美好湖南推荐官": "25890935",
+        "哈巴河县融媒体中心": "26220613",
+        "直播呼和浩特": "23315471",
+        "浦东妇联": "22595898",
+        "钦州好少年": "1867583423",
+        "甘肃省歌剧院": "24046888",
+        "龙头视频": "22884256",
+        "巴里坤好地方": "1786331430",
+        "建筑杂志社": "25053430",
+        "今日濮阳": "5100710",
+        "主持人周鑫": "12692795",
+        "微视路上": "22748147",
+        "中国钓鱼频道": "30877891",
+        "洪珍茹": "22963357",
+        "中国网体育": "30261459",
+        "上海虹口": "22577010",
+        "青春柯桥": "25505558",
+        "光电进展期刊": "23097542",
+        "玛利奥的星星": "1949306098",
+        "主持人甲仁": "23314784",
+        "长宁检察": "23055881",
+        "科创观察站": "1763024746",
+        "Phenisia": "21350209",
+        "湖北广电九头鸟FM": "22472858",
+        "逐愿大軍": "25008389",
+        "复兴岛": "1706665302",
+        "霍邱融媒": "32774560",
+        "巴州在线": "3536305",
+        "生活报": "21551282",
+        "遇见安宁": "22711774",
+        "温州广播电视传媒集团": "24626581",
+        "央广交通传媒湖南": "22376456",
+        "平潭综合实验区文化馆": "24385737",
+        "看大同": "22575376",
+        "中国森林歌会": "27347582",
+        "贵阳气象": "22761007",
+        "抚州市全媒体中心": "21765790",
+        "大连经合中心": "23320409",
+        "衡东福彩": "24374973",
+        "嘉兴市科技馆": "22370152",
+        "广州市番禺区文化馆": "22675187",
+        "影像新乡": "24232801",
+        "重报上游": "22287382",
+        "邓老师话科普": "22515181",
+        "房山区文化活动中心": "22821348",
+        "小街基镇": "8402071",
+        "中国商报": "22660896",
+        "南阳市金融工作局": "27407427",
+        "广元融媒": "31257206",
+        "文艺新声代": "21758825",
+        "曹榆哟": "1986389110",
+        "浦东东妮": "1417868",
+        "海州未检蓝海湾沪航港": "12806414",
+        "新世纪智能": "24861930",
+        "主持人路雁": "1746707688"
+    };
+    const ROOM_BY_ID = {};
+    Object.keys(ROOM_TABLE).forEach(function (k) { ROOM_BY_ID[String(ROOM_TABLE[k])] = k; });
+    // 恒纯净硬断言账号（2026-11-06 用户口径：只有这三家一直纯净）
+    // —— 其余账号（含中国网直播/央视财经/共青团中央）模式可能变，一律靠检测或人工指定，绝不写死
+    const PURE_ACCOUNTS = ['央视新闻', '新华社', '人民日报'];
+    // 央媒完整模板口径账号（纯净时输出「需要修改标题/简介/封面/分区」那套；判定黑名单时照样走黑名单模板）
+    const FULL_TEMPLATE_ACCOUNTS = ['央视新闻', '新华社', '人民日报', '中国网直播', '央视财经', '共青团中央'];
+    // 连体报备账号组：中新视频 / 中国新闻网 常同步开关播、播同样内容，一次输出两家的互动管控
+    const PAIRED_ACCOUNTS = ['中新视频', '中国新闻网'];
+    const PAIRED_PEER = { '中新视频': '中国新闻网', '中国新闻网': '中新视频' };
+    // 纯净/黑名单三态：true=纯净，false=黑名单，null=未判定（检测中或检测失败，交给人工选，绝不默认纯净）
+    let pureModeState = null;
+    let pureModeChecked = false;
+
+    // ================= 当班直播审核（腾讯文档每日值班表 → live.json） =================
+    // 数据契约与移交包一致：{ date, sheet, fetchedAt, live:[{label,start,end,zhiban2:['名字']}] }
+    // 时段判定：end 为 00:00 视为 24:00；start > end 视为跨零点；一格多人 → 全部 @ 上
+    const LIVE_DUTY_URL = (function () {
+        // 默认从 GitHub Pages 拉（抓取脚本生成的 live.json 传到仓库根即可，全组共用）
+        try {
+            const q = new URLSearchParams(location.search).get('duty');
+            if (q) return q;   // 支持 ?duty=https://…/live.json 临时换数据源
+        } catch (e) { }
+        return 'https://rann826.github.io/live-baobei/live.json';
+    })();
+    // 值班人 → B站账号 ID（用于 @某人(账号)）。没登记的人只输出 @名字，绝不瞎猜拼音
+    const DUTY_USER_IDS = {
+        '安娜': 'peixi',
+        '阿菲': 'mengna02',
+        '郭尔欢': 'guoerhuan'
+    };
+    let dutyData = null;          // { date, sheet, fetchedAt, live:[] }
+    let dutyPick = 'auto';        // 'auto' 按当前时间 | 'none' 不 @ | 'slot:<i>' 手动指定班次
+    let lastDutyKey = '';         // 上次参与输出的值班人，变化才重出模板
+    function dutyPad2(n) { return (n < 10 ? '0' : '') + n; }
+    function dutyTodayKey() {
+        const d = new Date();
+        return d.getFullYear() + '-' + dutyPad2(d.getMonth() + 1) + '-' + dutyPad2(d.getDate());
+    }
+    function dutyToMin(t) {
+        if (!t) return null;
+        const p = String(t).split(':');
+        if (p.length < 2) return null;
+        const h = parseInt(p[0], 10), m = parseInt(p[1], 10);
+        if (isNaN(h) || isNaN(m)) return null;
+        return h * 60 + m;
+    }
+    function dutyIsActive(item, nMin) {
+        const s = dutyToMin(item && item.start), e0 = dutyToMin(item && item.end);
+        if (s === null || e0 === null) return false;
+        const e = (e0 === 0) ? 1440 : e0;         // 00:00 当 24:00
+        if (s < e) return nMin >= s && nMin < e;
+        return nMin >= s || nMin < e;             // 真跨零点
+    }
+    function dutyNamesOf(item) {
+        let arr = (item && item.zhiban2) || [];
+        if (!Array.isArray(arr)) arr = [arr];
+        return arr.map(function (s) { return String(s).trim(); }).filter(Boolean);
+    }
+    function dutyOnDutyAt(when) {
+        if (!dutyData || !Array.isArray(dutyData.live)) return [];
+        const d = when || new Date();
+        const nMin = d.getHours() * 60 + d.getMinutes();
+        const names = [];
+        dutyData.live.forEach(function (it) {
+            if (!dutyIsActive(it, nMin)) return;
+            dutyNamesOf(it).forEach(function (n) { if (names.indexOf(n) < 0) names.push(n); });
+        });
+        return names;
+    }
+    function dutyOnDutyNow() { return dutyOnDutyAt(new Date()); }
+    function dutyNextShift() {
+        if (!dutyData || !Array.isArray(dutyData.live)) return null;
+        const d = new Date();
+        const nMin = d.getHours() * 60 + d.getMinutes();
+        let best = null;
+        dutyData.live.forEach(function (it) {
+            const s = dutyToMin(it.start);
+            if (s === null) return;
+            const gap = s > nMin ? s - nMin : s + 1440 - nMin;
+            if (!best || gap < best.minutesLeft) best = { label: it.label, start: it.start, names: dutyNamesOf(it), minutesLeft: gap };
+        });
+        return best;
+    }
+    function dutyCurrentNames() {
+        if (!dutyData || !Array.isArray(dutyData.live)) return [];
+        if (dutyPick === 'none') return [];
+        if (dutyPick.indexOf('slot:') === 0) {
+            const it = dutyData.live[parseInt(dutyPick.slice(5), 10)];
+            return it ? dutyNamesOf(it) : [];
+        }
+        return dutyOnDutyNow();
+    }
+    // 输出用：当班人只 @ 名字不带 ID（2026-11-07 口径）→ '@郭尔欢'
+    function dutyMentions() {
+        return dutyCurrentNames().map(function (n) { return '@' + n; }).join(' ');
+    }
+    // @ 三人组：安娜、阿菲固定在前（带 B站 ID），当班人追加在后（只写名字）
+    function supportMentions(sep) {
+        const base = '@安娜(peixi)' + sep + '@阿菲(mengna02)';
+        const dm = dutyMentions();
+        return dm ? (base + sep + dm) : base;
+    }
+    // 黑名单模板同口径：@安娜(peixi) @阿菲(mengna02) @当班人
+    // 没拿到值班表时，第三人保留「@当班审核」占位，提醒手动补
+    function blacklistMentions() {
+        const tail = dutyMentions() || '@当班审核';
+        return '@安娜(peixi) @阿菲(mengna02) ' + tail;
+    }
+    function dutyCacheKey() { return 'liveDutyCache_v1'; }
+    function restoreDutyCache() {
+        try {
+            const raw = localStorage.getItem(dutyCacheKey());
+            if (!raw) return false;
+            const j = JSON.parse(raw);
+            const live = (j && j.data && j.data.live) || null;
+            if (!live || !live.length) return false;
+            if (j.data.date && j.data.date !== dutyTodayKey()) return false;   // 只认当天的表
+            dutyData = j.data;
+            return true;
+        } catch (e) { return false; }
+    }
+    function saveDutyCache() {
+        try { localStorage.setItem(dutyCacheKey(), JSON.stringify({ savedAt: Date.now(), data: dutyData })); } catch (e) { }
+    }
+    function applyDutyPayload(j) {
+        const live = Array.isArray(j) ? j : (j && Array.isArray(j.live) ? j.live : null);
+        if (!live || !live.length) return false;
+        dutyData = {
+            date: (j && j.date) || '',
+            sheet: (j && j.sheet) || '',
+            fetchedAt: (j && j.fetchedAt) || '',
+            live: live
+        };
+        saveDutyCache();
+        buildDutyOptions();
+        renderDutyRow();
+        onDutyChanged();
+        return true;
+    }
+    async function loadDutyData(force) {
+        if (!force && restoreDutyCache()) { buildDutyOptions(); renderDutyRow(); return true; }
+        const url = LIVE_DUTY_URL;
+        try {
+            const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+            const timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 8000) : null;
+            let r;
+            try { r = await fetch(url, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined }); }
+            finally { if (timer) clearTimeout(timer); }
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const j = await r.json();
+            if (!applyDutyPayload(j)) throw new Error('值班表格式不对');
+            return true;
+        } catch (e) {
+            // 拉不到就用当天缓存（如果有）；否则显示「未获取」，@ 列表退回原样
+            restoreDutyCache();
+            buildDutyOptions();
+            renderDutyRow();
+            return false;
+        }
+    }
+    function buildDutyOptions() {
+        const sel = document.getElementById('dutySelect');
+        if (!sel) return;
+        let html = '<option value="auto">自动（按当前时间）</option>';
+        if (dutyData && Array.isArray(dutyData.live)) {
+            dutyData.live.forEach(function (it, i) {
+                const ns = dutyNamesOf(it);
+                html += '<option value="slot:' + i + '">' + escapeHtml(it.label) + ' · ' + escapeHtml(ns.join('、') || '未排班') + '</option>';
+            });
+        }
+        html += '<option value="none">不 @ 当班人</option>';
+        sel.innerHTML = html;
+        sel.value = dutyPick;
+        if (sel.value !== dutyPick) sel.value = 'auto';
+    }
+    function renderDutyRow() {
+        const dot = document.getElementById('dutyDot');
+        const txt = document.getElementById('dutyText');
+        if (!dot || !txt) return;
+        const names = dutyCurrentNames();
+        const stale = (dutyData && dutyData.date && dutyData.date !== dutyTodayKey())
+            ? '（值班表是 ' + dutyData.date + ' 的，可能未更新）' : '';
+        if (!dutyData) {
+            dot.className = 'duty-dot off';
+            txt.innerHTML = '当班直播审核：<b>未获取</b> <span class="duty-sub">点「导入值班表」，或抓取后点刷新</span>';
+            return;
+        }
+        const manual = dutyPick.indexOf('slot:') === 0
+            ? (dutyData.live[parseInt(dutyPick.slice(5), 10)] || {}).label : '';
+        if (dutyPick === 'none') {
+            dot.className = 'duty-dot off';
+            txt.innerHTML = '当班直播审核：<b>已手动关闭</b> <span class="duty-sub">模板里不会 @ 当班人</span>';
+            return;
+        }
+        if (!names.length) {
+            dot.className = 'duty-dot off';
+            txt.innerHTML = '当班直播审核：<b>当前时段未排班</b>' + (stale ? ' <span class="duty-warn">' + stale + '</span>' : '');
+            return;
+        }
+        dot.className = 'duty-dot';
+        let sub = '';
+        if (manual) {
+            sub = manual;
+        } else {
+            const nx = dutyNextShift();
+            if (nx) sub = nx.label + ' · ' + nx.minutesLeft + ' 分钟后换班（' + nx.start + ' ' + (nx.names.join('、') || '未排班') + '）';
+        }
+        txt.innerHTML = '当班直播审核：<b>' + escapeHtml(names.join('、')) + '</b>' +
+            (sub ? ' <span class="duty-sub">' + escapeHtml(sub) + '</span>' : '') +
+            (stale ? ' <span class="duty-warn">' + stale + '</span>' : '');
+    }
+    function onDutyChanged() {
+        const key = dutyCurrentNames().join('|');
+        if (key === lastDutyKey) return;
+        lastDutyKey = key;
+        generateOutput();
+    }
+    (function initDuty() {
+        const sel = document.getElementById('dutySelect');
+        const reload = document.getElementById('dutyReloadBtn');
+        const impBtn = document.getElementById('dutyImportBtn');
+        const impInput = document.getElementById('dutyFileInput');
+        if (sel) sel.addEventListener('change', function () {
+            dutyPick = this.value || 'auto';
+            renderDutyRow();
+            onDutyChanged();
+        });
+        if (reload) reload.addEventListener('click', function () {
+            showToast('正在拉取值班表…');
+            loadDutyData(true).then(function (ok) {
+                showToast(ok ? '✅ 值班表已更新' : '⚠ 拉取失败，可用「导入值班表」手动导入 live.json', ok ? 'success' : 'error');
+            });
+        });
+        if (impBtn && impInput) {
+            impBtn.addEventListener('click', function () { impInput.click(); });
+            impInput.addEventListener('change', function () {
+                const f = this.files && this.files[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = function () {
+                    try {
+                        const j = JSON.parse(String(reader.result));
+                        if (!applyDutyPayload(j)) throw new Error('格式不对');
+                        showToast('✅ 值班表已导入（' + (dutyData.sheet || dutyData.date || '') + '）', 'success');
+                    } catch (e) {
+                        showToast('导入失败：live.json 格式不对', 'error');
+                    }
+                };
+                reader.readAsText(f);
+                this.value = '';
+            });
+        }
+        // 每分钟重算一次（跨整点自动换人），值班人变了才重出模板
+        setInterval(function () { renderDutyRow(); onDutyChanged(); }, 60000);
+        loadDutyData(false);
+    })();
     const accountSelector = document.getElementById('accountSelector');
     const accountBtns = accountSelector.querySelectorAll('.account-btn');
     const inputTime = document.getElementById('inputTime');
@@ -672,7 +2358,11 @@
     let currentAccount = '央视新闻';
     let coverImageData = null;
     let isZeroMode = false;
-    let interactPolicy = '';   // '' | '1级禁言+词包' | '3级禁言+词包' | '5级禁言+词包' | '先审后发' | '关闭互动'
+    let interactPolicy = '';   // UI 选择：'' | 策略 | '关闭互动' | '关闭礼物' | 'custom'（智能识别给出的自定义组合）
+    // 实际生效的互动开关：智能识别可直接给出「弹幕关 + 礼物开」这种非预设组合，所以开关状态独立存放
+    let interactState = { danmuOff: false, giftOff: false, policy: '' };
+    // 本次智能识别是否明确写了「礼物/飘屏：开」——纯净模式没有礼物功能，命中要在输出区醒目提醒
+    let parsedGiftOn = false;
     let generatedPart1 = '';
     let generatedPart2 = '';
     let generatedFull = '';
@@ -705,12 +2395,208 @@
         toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
     }
 
+    function isPureAccount(name) { return PURE_ACCOUNTS.indexOf(name) > -1; }
+
     function selectAccount(name) {
-        if (!ACCOUNTS[name]) return;
+        if (!ACCOUNTS[name] && !ROOM_TABLE[name]) return;
+        const changed = currentAccount !== name;
         currentAccount = name;
         accountBtns.forEach(b => b.classList.toggle('active', b.dataset.account === name));
         checkAccountName.textContent = currentAccount;          // 第四板块同步显示当前检查账号
-        if (checkJump) checkJump.href = ACCOUNTS[currentAccount].url;  // 跳转按钮指向当前账号直播间
+        if (checkJump) checkJump.href = getAccountUrl();        // 跳转按钮指向当前账号直播间
+        updateMediaPickUI();
+        if (changed && !isPureAccount(name)) detectPureMode();
+    }
+
+    // ---- 普通媒体：搜索 / 选择 / 模式徽标 ----
+    function updateMediaPickUI() {
+        const el = document.getElementById('mediaPickCurrent');
+        if (!el) return;
+        const url = getAccountUrl();
+        const pure = isPureAccount(currentAccount);
+        let tag;
+        if (pure) {
+            tag = '<span class="tag pure">央媒完整模板 · 恒纯净</span>';
+        } else if (pureModeState === true) {
+            tag = '<span class="tag normal">普通媒体口径 · 纯净</span>';
+        } else if (pureModeState === false) {
+            tag = '<span class="tag normal">普通媒体口径 · 黑名单</span>';
+        } else {
+            tag = '<span class="tag normal">' + (pureModeFailed ? '待人工确认（检测失败）' : '检测中…') + '</span>';
+        }
+        // 普通媒体：随时可人工指定模式（检测失败时也不默认纯净，必须人来定）
+        const switcher = pure ? '' : ('<span class="mode-switch">模式：' +
+            '<button type="button" class="mode-btn' + (pureModeState === true ? ' active' : '') + '" data-mode-choice="pure">纯净</button>' +
+            '<button type="button" class="mode-btn' + (pureModeState === false ? ' active' : '') + '" data-mode-choice="black">黑名单</button>' +
+            '</span>');
+        el.innerHTML = '当前账号：<b>' + escapeHtml(currentAccount) + '</b> · ' +
+            (url ? '<span style="font-size:0.75rem;">' + escapeHtml(url.replace('https://live.bilibili.com/', '直播间 ')) + '</span>' : '未登记直播间') + tag + switcher;
+        // 输出区顶部提示：检测未出结果时明确告知「当前模板是按纯净预览」，避免误当成判定结论
+        const hint = document.getElementById('modeHint');
+        if (hint) {
+            if (currentAccount && !pure && pureModeState === null) {
+                hint.className = 'mode-hint ' + (pureModeFailed ? 'failed' : 'pending');
+                hint.style.display = 'flex';
+                hint.textContent = pureModeFailed
+                    ? '⚠ 自动检测失败，不知道该直播间是纯净还是黑名单。请在上方「模式」里点「纯净」或「黑名单」确认后，模板才会生成'
+                    : '⏳ 正在检测该直播间是「纯净」还是「黑名单」（约 5~10 秒），也可以在上方「模式」里直接手动指定';
+            } else {
+                hint.style.display = 'none';
+                hint.textContent = '';
+            }
+        }
+        // 模式/账号变了 → 策略下拉里的「仅关礼物」选项与文案跟着切（纯净模式不适用）
+        refreshPolicyUI();
+    }
+
+    // 人工指定直播间模式（检测失败/模式可能已变时用）：作废在途检测结果，立即重出模板
+    function setPureModeChoice(mode) {
+        if (isPureAccount(currentAccount)) return;
+        pureModeToken++;
+        pureModeState = (mode === 'pure');
+        pureModeChecked = true;
+        pureModeFailed = false;
+        updateMediaPickUI();
+        generateOutput();
+        showToast(mode === 'pure' ? '已按「纯净模式」输出' : '已按「黑名单模式」输出');
+    }
+    (function bindModeSwitch() {
+        const el = document.getElementById('mediaPickCurrent');
+        if (!el) return;
+        el.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-mode-choice]');
+            if (btn) { e.stopPropagation(); setPureModeChoice(btn.dataset.modeChoice); }
+        });
+    })();
+    function renderMediaPickList(kw) {
+        const list = document.getElementById('mediaPickList');
+        if (!list) return;
+        const q = String(kw || '').trim().toLowerCase();
+        if (!q) { list.classList.remove('show'); list.innerHTML = ''; return; }
+        const names = Object.keys(ROOM_TABLE).filter(function (n) {
+            return n.toLowerCase().indexOf(q) > -1 || String(ROOM_TABLE[n]).indexOf(q) > -1;
+        }).slice(0, 40);
+        if (!names.length) {
+            list.innerHTML = '<div class="media-pick-empty">没找到「' + escapeHtml(kw) + '」，请检查账号名称</div>';
+            list.classList.add('show');
+            return;
+        }
+        list.innerHTML = names.map(function (n) {
+            const link = 'http://live.bilibili.com/' + ROOM_TABLE[n];
+            return '<div class="media-pick-item" data-name="' + escapeHtml(n) + '"><span>' + escapeHtml(n) +
+                '</span><a class="rid" href="' + link + '" target="_blank" title="打开直播间（新标签）">' + link + '</a></div>';
+        }).join('');
+        list.classList.add('show');
+    }
+
+    (function bindMediaPick() {
+        const inp = document.getElementById('mediaSearchInput');
+        const list = document.getElementById('mediaPickList');
+        if (!inp || !list) return;
+        inp.addEventListener('input', function () { renderMediaPickList(this.value); });
+        inp.addEventListener('focus', function () { if (this.value) renderMediaPickList(this.value); });
+        list.addEventListener('click', function (e) {
+            if (e.target.closest('a.rid')) return;   // 点链接本身=新标签打开直播间，不切换账号
+            const it = e.target.closest('.media-pick-item');
+            if (!it) return;
+            const name = it.dataset.name;
+            selectAccount(name);
+            inp.value = name;
+            list.classList.remove('show');
+            list.innerHTML = '';
+            generateOutput();
+            showToast('已切换账号：' + name);
+        });
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.media-pick-row')) list.classList.remove('show');
+        });
+    })();
+
+    // ---- 纯净/黑名单实时检测（2026-11-06 重写判据）----
+    // 政媒「纯净」直播间在 B 站房间里被整体骨架化：news_info / rankdb_info / tab_info / ad_banner_info /
+    // skin_info / room_config_info / area_rank_info 全为 null（gift_info 也为 null）。
+    // 实测 16 个房间：纯净组（6 央媒 + 央视频 + 央视网 + 央视网快看 + 人民网）10/10 是 7/7 null；
+    // 普通媒体（观察者网 / 波士顿圆脸 / 吃花椒的喵酱 / 玩家房间）6/6 是 0/7 null —— 与是否开播无关。
+    // 旧判据「news_info.content 非空=黑名单」不准：观察者网 948391 公告为空但仍是黑名单。
+    // 抓取全失败 → 按「纯净」完整模板输出 + 徽标标「检测失败」，绝不瞎判黑名单
+    const PURE_NULL_KEYS = ['news_info', 'rankdb_info', 'tab_info', 'ad_banner_info', 'skin_info', 'room_config_info', 'area_rank_info'];
+    let pureModeFailed = false;
+    let pureModeToken = 0;              // 防串台：切账号后旧请求的结果不回写
+    function judgePureData(d) {
+        if (!d || typeof d !== 'object') return null;
+        const nul = PURE_NULL_KEYS.filter(k => d[k] === null).length;
+        if (nul >= 3) return true;                                   // 骨架化 = 纯净
+        if (d.news_info && typeof d.news_info === 'object') return false;  // 有公告对象 = 黑名单
+        return null;
+    }
+    function judgePureHtml(html) {
+        if (!html) return null;
+        let nul = 0;
+        for (const k of PURE_NULL_KEYS) {
+            if (new RegExp('"' + k + '"\\s*:\\s*null').test(html)) nul++;
+        }
+        if (nul >= 3) return true;
+        if (/"news_info"\s*:\s*\{/.test(html)) return false;
+        return null;   // 页面是纯 SPA 壳、拿不到内嵌数据 → 判不了
+    }
+    // 竞速：谁先给出明确结论就用谁（返回 null 的通道不抢占，全部 null 才算判不了）
+    function firstVerdict(tasks) {
+        return new Promise(function (resolve) {
+            let pending = tasks.length, done = false;
+            function settle(v) {
+                if (done) return;
+                if (v !== null && v !== undefined) { done = true; resolve(v); return; }
+                pending--;
+                if (pending <= 0) { done = true; resolve(null); }
+            }
+            tasks.forEach(function (t) {
+                Promise.resolve(t).then(settle, function () { settle(null); });
+            });
+        });
+    }
+    async function detectPureMode() {
+        if (isPureAccount(currentAccount)) { pureModeState = true; pureModeChecked = true; pureModeFailed = false; updateMediaPickUI(); return; }
+        const rid = ROOM_TABLE[currentAccount];
+        if (!rid) { pureModeChecked = false; updateMediaPickUI(); return; }
+        const token = ++pureModeToken;
+        pureModeChecked = false;
+        pureModeFailed = false;
+        pureModeState = null;      // 切到新账号先清空判定，绝不沿用上一个账号的结论
+        updateMediaPickUI();
+        // 两通道并行竞速（2026-11-06 提速）：
+        //   通道 A 房间数据接口 —— 本机代理直通时 <2s，最准；云端 IP 会 -352，故只试前 2 个通道快速落败
+        //   通道 B 房间页面内嵌数据 —— 云端 SCF 兜底，约 5~8s
+        // 并行后总体 5~10s 出结论（原来是串行 12~25s，慢到用户以为「判成纯净」）
+        const apiTask = (async function () {
+            try {
+                const r = await fetchPageText(
+                    'https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=' + rid,
+                    function (c) { try { return JSON.parse(c.text).code === 0; } catch (e) { return false; } },
+                    { timeout: 9000, maxPlans: 2 });
+                return judgePureData((JSON.parse(r.text) || {}).data);
+            } catch (e) { return null; }
+        })();
+        const pageTask = (async function () {
+            try {
+                const r = await fetchPageText('https://live.bilibili.com/' + rid,
+                    function (c) { return (c.text || '').length > 2000; },
+                    { timeout: 12000, maxPlans: 3 });
+                return judgePureHtml((r && r.text) || '');
+            } catch (e) { return null; }
+        })();
+        const verdict = await firstVerdict([apiTask, pageTask]);
+        if (token !== pureModeToken) return;   // 期间切了账号，丢弃本次结果
+        if (verdict === null) {
+            pureModeState = null;              // 判不了 → 绝不默认纯净，等人工选模式
+            pureModeChecked = false;
+            pureModeFailed = true;
+        } else {
+            pureModeState = verdict;
+            pureModeChecked = true;
+            pureModeFailed = false;
+        }
+        updateMediaPickUI();
+        generateOutput();
     }
 
     accountBtns.forEach(btn => {
@@ -729,22 +2615,70 @@
     });
 
     // ---- 互动开关 / 管控策略 下拉 ----
-    function setInteractPolicy(value, silent) {
-        interactPolicy = value || '';
+    // 由 UI 选项推导实际开关（关闭互动 = 弹幕+礼物都关；关闭礼物 = 只关礼物/飘屏）
+    function interactStateFromPolicy(v) {
+        if (v === '关闭互动') return { danmuOff: true, giftOff: true, policy: '' };
+        if (v === '关闭礼物') return { danmuOff: false, giftOff: true, policy: '' };
+        if (v && v !== 'custom') return { danmuOff: false, giftOff: false, policy: v };
+        return { danmuOff: false, giftOff: false, policy: '' };
+    }
+    // 当前账号是否按纯净模式报备（三家央媒恒纯净；其他账号只认实测/人工指定结果）
+    function currentPureMode() {
+        if (isPureAccount(currentAccount)) return true;
+        return pureModeState === true;
+    }
+    // 一句话摘要（供提示语与解析摘要用）
+    // 纯净模式没有礼物功能：飘屏只跟互动开关同步，礼物开关不参与
+    function interactSummaryText() {
+        const d = interactState.danmuOff
+            ? '弹幕互动：关'
+            : (interactState.policy ? ('弹幕互动：开，' + interactState.policy) : '弹幕互动：开');
+        if (currentPureMode()) return d + ' / 飘屏：' + (interactState.danmuOff ? '关' : '开');
+        return d + ' / 礼物飘屏：' + (interactState.giftOff ? '关' : '开');
+    }
+    function refreshPolicyUI() {
+        const isPure = currentPureMode();
         policyOptions.forEach(opt => {
             const on = opt.dataset.value === interactPolicy;
             opt.classList.toggle('active', on);
             opt.querySelector('.tick').textContent = on ? '✓' : '';
+            // 纯净模式没有礼物功能 → 「仅关礼物」这个选项不适用，直接不显示，避免误选
+            if (opt.dataset.value === '关闭礼物') opt.style.display = isPure ? 'none' : '';
         });
-        policyBtn.classList.toggle('has-value', !!interactPolicy && interactPolicy !== '关闭互动');
-        policyBtn.classList.toggle('is-close', interactPolicy === '关闭互动');
-        policyLabel.textContent = interactPolicy
-            ? (interactPolicy === '关闭互动' ? '关闭互动（弹幕互动、飘屏均关）' : interactPolicy)
-            : '不选择（输出「弹幕互动：开 / 飘屏：开」）';
+        const closed = (interactPolicy === '关闭互动' || interactPolicy === '关闭礼物');
+        policyBtn.classList.toggle('has-value', (!!interactPolicy && !closed) || interactPolicy === 'custom');
+        policyBtn.classList.toggle('is-close', closed);
+        if (interactPolicy === '关闭互动') policyLabel.textContent = '关闭互动（弹幕互动、飘屏均关）';
+        else if (interactPolicy === '关闭礼物') policyLabel.textContent = isPure
+            ? '纯净模式不使用礼物开关（输出：弹幕互动开 / 飘屏开）'
+            : '仅关礼物 / 飘屏（弹幕互动开）';
+        else if (interactPolicy === 'custom') policyLabel.textContent = '智能识别：' + interactSummaryText();
+        else if (interactPolicy) policyLabel.textContent = interactPolicy;
+        else policyLabel.textContent = '不选择（输出「弹幕互动：开 / 飘屏：开」）';
+        policyBtn.classList.toggle('is-close', closed && interactPolicy !== '关闭礼物');
+    }
+    function setInteractPolicy(value, silent) {
+        interactPolicy = value || '';
+        interactState = interactStateFromPolicy(interactPolicy);
+        refreshPolicyUI();
         generateOutput();
         if (!silent) {
             showToast(interactPolicy ? ('互动策略：' + policyLabel.textContent) : '已恢复默认（弹幕互动开 / 飘屏开）');
         }
+    }
+    // 智能识别结果直接落到开关上（支持「弹幕关 + 礼物开」这种非预设组合）
+    function applyParsedInteract(it) {
+        if (!it) return;
+        const danmuOff = it.danmu === 'off';
+        const giftOff = it.gift === 'off';
+        const policy = it.policy || '';
+        interactState = { danmuOff: danmuOff, giftOff: giftOff, policy: policy };
+        if (danmuOff && giftOff) interactPolicy = '关闭互动';
+        else if (!danmuOff && giftOff) interactPolicy = '关闭礼物';
+        else if (policy && !danmuOff) interactPolicy = policy;
+        else if (!danmuOff && !giftOff) interactPolicy = '';
+        else interactPolicy = 'custom';   // 弹幕关、礼物开
+        refreshPolicyUI();
     }
     policyBtn.addEventListener('click', e => {
         e.stopPropagation();
@@ -849,8 +2783,14 @@
     // ================= 基础工具 =================
     function cleanTimeInput(timeStr) { const t = (timeStr||'').trim(); return t ? t : '待同步'; }
     function parseRtmpAddresses(text) { if (!text || !text.trim()) return []; return text.split('\n').map(l => l.trim()).filter(l => l.length > 0); }
-    function getAccountUrl() { return (ACCOUNTS[currentAccount] && ACCOUNTS[currentAccount].url) || ACCOUNTS['央视新闻'].url; }
-    function getAccountLabel() { return (ACCOUNTS[currentAccount] && ACCOUNTS[currentAccount].label) || currentAccount; }
+    function getAccountUrl() {
+        if (ACCOUNTS[currentAccount]) return ACCOUNTS[currentAccount].url;
+        if (ROOM_TABLE[currentAccount]) return 'https://live.bilibili.com/' + ROOM_TABLE[currentAccount];
+        return ACCOUNTS['央视新闻'].url;
+    }
+    function getAccountLabel() {
+        return (ACCOUNTS[currentAccount] && ACCOUNTS[currentAccount].label) || currentAccount;
+    }
     function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
     function parseTimeToHourMinute(timeStr) {
@@ -915,26 +2855,104 @@
         if (!title && !body && rtmpList.length === 0) {
             outputEmpty.style.display = 'flex'; outputContent.style.display = 'none';
             if (zeroReminder) zeroReminder.classList.remove('show');
+            const pgw0 = document.getElementById('pureGiftWarn');
+            if (pgw0) pgw0.classList.remove('show');
             generatedPart1 = generatedPart2 = generatedFull = '';
             return;
         }
 
+        // ===== 口径分支：央媒完整模板 / 其他媒体简化口径（与「纯净·黑名单」是两个独立维度）=====
+        const simplified = FULL_TEMPLATE_ACCOUNTS.indexOf(currentAccount) < 0;
+        const hasRtmp = rtmpList.length > 0;
+        const coverName = coverImageData ? coverImageData.filename : '';
+        // 纯净/黑名单：三家硬断言恒纯净；其他账号只用实测/人工指定结果，null=未判定（不猜、不默认纯净）
+        const pureMode = isPureAccount(currentAccount) ? true : pureModeState;
+        // 未判定 → 不出模板，明确要求人工指定模式（2026-11-06 用户要求：检测失败不许归到纯净）
+        if (!isPureAccount(currentAccount) && pureMode === null) {
+            generatedPart1 = generatedPart2 = generatedFull = '';
+            outputEmpty.style.display = 'none';
+            outputContent.style.display = 'block';
+            outputContent.innerHTML = '<div class="mode-unknown">请先确定该直播间的模式' +
+                '<span>' + (pureModeFailed
+                    ? '自动检测失败，需要人工判断：在账号行「模式」里点「纯净」或「黑名单」'
+                    : '正在自动检测，也可以直接在账号行「模式」里手动指定') + '</span></div>';
+            if (zeroReminder) zeroReminder.classList.remove('show');
+            const pgw1 = document.getElementById('pureGiftWarn');
+            if (pgw1) pgw1.classList.remove('show');
+            return;
+        }
+        // 黑名单模式：不管哪家媒体，判定为黑名单就走黑名单模板（只报标题/简介 + 互动区弹幕/营收礼物道具 + @三人）
+        // 「及信息修改」后缀：仅央媒完整口径 + 有拉流时加；普通媒体就算给了拉流地址也不输出修改信息模板（2026-11-05 用户要求）
+        const blacklistMode = !pureMode;
+        const headTag = blacklistMode
+            ? '黑名单模式互动管控'
+            : ((pureMode ? '政媒纯净模式互动管控' : '黑名单模式互动管控') + (!simplified && hasRtmp ? '及信息修改' : ''));
+
+        // 弹幕互动：关（识别/手动选关闭互动）→「关」；有策略→「开，<策略名>」；否则「开」
+        const danmuVal = interactState.danmuOff ? '关' : (interactState.policy ? ('开，' + interactState.policy) : '开');
+        // 飘屏：
+        //   纯净模式（没有礼物功能）→ 只跟互动开关同步，忽略礼物开关；
+        //   黑名单模式 → 看「营收礼物道具」开关（关礼物/关互动都算关）；涉零一律关
+        const piaoOnPure = (interactState.danmuOff || isZeroMode) ? '关' : '开';
+        const piaoOnBlack = (interactState.giftOff || isZeroMode) ? '关' : '开';
+
         const part1 = [];
-        part1.push('【政媒纯净模式互动管控及信息修改】（' + accountLabel + '）');
-        part1.push('直播间地址：' + accountUrl);
-        part1.push('直播时间：' + timeStr);
-        // 标题/简介/封面：空也显示标签（始终给出可手填的空行）
-        part1.push('直播间需要修改标题：' + title);
-        part1.push(body ? ('直播间需要修改简介：' + body) : '简介辛苦清空');
-        part1.push('直播间封面修改：' + (coverImageData ? coverImageData.filename : '待同步'));
-        part1.push('开播分区：' + (isZeroMode ? '时政' : '社会观察财经'));
-        // 弹幕互动：不选→「开」；关闭互动→「关」；其余策略→「开，<策略名>」（如「弹幕互动：开，1级禁言+词包」）
-        const danmuVal = (interactPolicy === '关闭互动') ? '关' : (interactPolicy ? ('开，' + interactPolicy) : '开');
-        // 飘屏：关闭互动 或 涉零 → 关，其余 → 开
-        const piaoOn = (interactPolicy === '关闭互动' || isZeroMode) ? '关' : '开';
-        part1.push('弹幕互动：' + danmuVal);
-        part1.push('飘屏：' + piaoOn);
-        part1.push('@安娜(peixi)  @阿菲(mengna02)');
+        // 连体报备：中新视频 / 中国新闻网 常同步开关播、播同一场，一次输出两家的互动管控
+        const pairedPeer = PAIRED_ACCOUNTS.indexOf(currentAccount) > -1 ? PAIRED_PEER[currentAccount] : '';
+        if (pairedPeer) {
+            const peerUrl = 'https://live.bilibili.com/' + ROOM_TABLE[pairedPeer];
+            const pairTag = (pureMode ? '纯净模式互动管控' : '黑名单模式互动管控');
+            part1.push('【' + pairTag + '】（' + accountLabel + '）');
+            part1.push('直播间地址：' + accountUrl);
+            part1.push('【' + pairTag + '】（' + pairedPeer + '）');
+            part1.push('直播间地址：' + peerUrl);
+            part1.push('【标题】' + title);
+            part1.push('【时间】' + timeStr);
+            part1.push('【简介】' + body);
+            if (blacklistMode) {
+                part1.push('互动区弹幕：' + danmuVal);
+                part1.push('营收礼物道具：' + piaoOnBlack);
+                part1.push(blacklistMentions());
+            } else {
+                part1.push('弹幕互动：' + danmuVal);
+                part1.push('飘屏：' + piaoOnPure);
+                part1.push(supportMentions(' '));
+            }
+        } else {
+            part1.push('【' + headTag + '】（' + accountLabel + '）');
+            part1.push('直播间地址：' + accountUrl);
+            if (blacklistMode) {
+                // 黑名单模板：智能识别没给标题/简介就不留空标签（下方会提示可手动补）
+                part1.push('直播时间：' + timeStr);
+                if (title) part1.push('直播标题：' + title);
+                if (body) part1.push('直播简介：' + body);
+            } else if (simplified) {
+                // 普通媒体：只报互动管控——有没有拉流都不输出「修改信息」字段（需要修改标题/简介/封面/分区），
+                // 没提的整行省略；非六家央媒给了拉流地址也不输出【直播推拉流技术需求报备】段（只在页面上提示已忽略）
+                if (timeStr) part1.push('直播时间：' + timeStr);
+                if (title) part1.push('直播间标题：' + title);
+                if (body) part1.push('直播间简介：' + body);
+                if (coverName) part1.push('直播间封面：' + coverName);
+                if (isZeroMode) part1.push('开播分区：时政');
+            } else {
+                part1.push('直播时间：' + timeStr);
+                // 标题/简介/封面：空也显示标签（始终给出可手填的空行）
+                part1.push('直播间需要修改标题：' + title);
+                part1.push(body ? ('直播间需要修改简介：' + body) : '简介辛苦清空');
+                part1.push('直播间封面修改：' + (coverImageData ? coverImageData.filename : '待同步'));
+                part1.push('开播分区：' + (isZeroMode ? '时政' : '社会观察财经'));
+            }
+            if (blacklistMode) {
+                // 黑名单模式：字段名对齐 bilibili 后台开关 —— 互动区弹幕 / 营收礼物道具
+                part1.push('互动区弹幕：' + danmuVal);
+                part1.push('营收礼物道具：' + piaoOnBlack);
+                part1.push(blacklistMentions());
+            } else {
+                part1.push('弹幕互动：' + danmuVal);
+                part1.push('飘屏：' + piaoOnPure);
+                part1.push(supportMentions(' '));
+            }
+        }
 
         // 涉零配置句：仅当涉零且能解析出直播时间段时才写进报备模板。
         // 时间未填/认不出 → 不出现「待同步」那句，改为在「报备输出」区顶部弹提醒（见下方 zeroReminder）
@@ -942,23 +2960,28 @@
         if (isZeroMode) {
             const range = generateZeroTimeRange(timeStrRaw);
             if (range) {
-                const prefix = (interactPolicy === '关闭互动') ? '' : '先审后发、';
+                const prefix = interactState.danmuOff ? '' : '先审后发、';
                 part1.push('辛苦老师配置' + range + '：' + prefix + '首黑、全公域xl、禁止上下滑');
             } else {
                 needZeroReminder = true;
             }
         }
 
+        // 技术报备模块：只在六家央媒（完整口径）输出。其他账号就算给了拉流地址，也不输出这一段（2026-11-08 用户重申）
+        const showPart2 = !simplified;
+        const droppedRtmp = (!showPart2 && hasRtmp) ? rtmpList.length : 0;
         const part2 = [];
-        part2.push('【直播推拉流技术需求报备】（' + accountLabel + '）');
-        part2.push('直播间地址：' + accountUrl);
-        part2.push('时间：' + timeStr);
-        part2.push('拉流地址：');
-        rtmpList.forEach(addr => part2.push(addr));
+        if (showPart2) {
+            part2.push('【直播推拉流技术需求报备】（' + accountLabel + '）');
+            part2.push('直播间地址：' + accountUrl);
+            part2.push('时间：' + timeStr);
+            part2.push('拉流地址：');
+            rtmpList.forEach(addr => part2.push(addr));
+        }
 
         generatedPart1 = part1.join('\n');
         generatedPart2 = part2.join('\n');
-        generatedFull = generatedPart1 + '\n\n' + generatedPart2;
+        generatedFull = showPart2 ? (generatedPart1 + '\n\n' + generatedPart2) : generatedPart1;
 
         const htmlLines = [];
         part1.forEach(line => {
@@ -968,8 +2991,10 @@
                 htmlLines.push(escapeHtml(line));
             }
         });
-        htmlLines.push('<hr class="section-divider" style="border:none;border-top:1px solid #e2e8f0;margin:14px 0;">');
-        part2.forEach(line => htmlLines.push(escapeHtml(line)));
+        if (part2.length) {
+            htmlLines.push('<hr class="section-divider" style="border:none;border-top:1px solid #e2e8f0;margin:14px 0;">');
+            part2.forEach(line => htmlLines.push(escapeHtml(line)));
+        }
 
         outputContent.innerHTML = htmlLines.join('<br>');
         outputEmpty.style.display = 'none';
@@ -978,6 +3003,35 @@
         // 涉零未填时间 → 报备输出区顶部提醒（不写进模板）
         if (needZeroReminder && zeroReminder) zeroReminder.classList.add('show');
         else if (zeroReminder) zeroReminder.classList.remove('show');
+
+        // 纯净模式识别到「礼物：开」→ 醒目红色提醒，请人工评估是否移出（只上屏，不写进模板）
+        // 不论互动开关是开还是关，命中就提醒；黑名单模式不提醒（本来就有礼物功能）
+        const pgw = document.getElementById('pureGiftWarn');
+        if (pgw) {
+            if (!blacklistMode && parsedGiftOn) pgw.classList.add('show');
+            else pgw.classList.remove('show');
+        }
+
+        // 黑名单模式：识别没给标题/简介 → 模板已省略该行，这里给个小提醒（只显示在页面上，不写进模板）
+        const noteEl = document.getElementById('templateNote');
+        if (noteEl) {
+            const miss = [];
+            if (blacklistMode && !pairedPeer) {
+                if (!title) miss.push('标题');
+                if (!body) miss.push('简介');
+            }
+            const tips = [];
+            if (miss.length) tips.push('⚠ 本次没有识别到' + miss.join('、') + '，模板里已省略该行；需要的话填进上方输入框，会自动补上');
+            // 非六家央媒：给了拉流地址也不输出技术报备段，这里明说一句，免得以为漏了
+            if (droppedRtmp) tips.push('ℹ 该账号不在六家央媒内，不输出【直播推拉流技术需求报备】；填写的 ' + droppedRtmp + ' 条拉流地址已忽略');
+            if (tips.length) {
+                noteEl.style.display = 'flex';
+                noteEl.innerHTML = tips.map(escapeHtml).join('<br>');
+            } else {
+                noteEl.style.display = 'none';
+                noteEl.textContent = '';
+            }
+        }
     }
     // ================= 智能解析引擎 v2：按标签逐项解析 =================
     // 序号/项目符号前缀：仅当后面跟 、.．,，)） 等分隔符时才剥离，避免误伤“10月1日”
@@ -1133,8 +3187,82 @@
         return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
     }
 
+    // ================= 互动需求识别（弹幕互动 / 评论 / 礼物 / 飘屏 / 策略） =================
+    // 支持这些写法：弹幕互动：关 / 礼物：开 / 评论开，礼物关 / 互动开 / 互动关 / 关闭互动 /
+    //              营收礼物道具：关 / 飘屏：关 / 1级禁言+词包 / 先审后发
+    // 返回 { danmu:'on'|'off'|null, gift:'on'|'off'|null, policy:'' } ；不是互动行则返回 null
+    const INTERACT_HINT_RE = /互动|弹幕|评论|礼物|道具|飘屏|禁言|先审后发|打赏|聊天/;
+    // 键别名「长的在前」：礼物互动/礼物动态 必须在 礼物 前；互动区弹幕 在 互动区 前；弹幕互动 在 弹幕 前。
+    // 值允许被括号/引号/书名号包着（（开）、(关)、"开"、【关】），也允许打勾打叉。
+    const INTERACT_KV_RE = /(营收礼物道具|礼物互动|礼物动态|礼物道具|互动区弹幕|弹幕互动|互动弹幕|互动区|评论区|聊天区|评论|弹幕|聊天|礼物|道具|飘屏|打赏|互动)\s*(开|开启|打开|开放|启用|开起|已开|关|关闭|禁用|关掉|停用|不开|已关|√|✓|×|✗)/g;
+    // 归「礼物 / 飘屏」组的关键词（其余都算互动区）
+    const INTERACT_GIFT_KEY_RE = /礼物|道具|飘屏|打赏|营收/;
+    function normInteractLine(line) {
+        return String(line || '')
+            .replace(/[【】\[\]（）()「」《》〈〉]/g, '')
+            .replace(/["'“”‘’]/g, '')
+            .replace(/[：:]/g, '')
+            .replace(/[=＝]/g, '')
+            .replace(/\s+/g, '')
+            .trim();
+    }
+    function parseInteractLine(line) {
+        const raw = String(line || '').trim();
+        if (!raw) return null;
+        // 只认短句，长段落（通稿正文里提到“互动/礼物”）不参与，避免误伤简介
+        if (raw.length > 26 || /[。！？!?]/.test(raw)) return null;
+        if (!INTERACT_HINT_RE.test(raw)) return null;
+        if (/^@|直播间|地址|标题|简介|通稿/.test(raw)) return null;
+
+        const seg = normInteractLine(raw);
+        const res = { danmu: null, gift: null, giftImplied: false, giftExplicit: false, policy: '' };
+        let found = false;
+        // 建立/覆盖礼物开关：明确写「礼物/道具/飘屏」的优先，泛称「互动区」只是默认同步
+        const setGift = (val, explicit) => {
+            if (explicit) { res.gift = val; res.giftExplicit = true; return; }
+            if (res.giftExplicit) return;         // 已有明确礼物需求，泛称不覆盖
+            res.gift = val; res.giftImplied = true;
+        };
+
+        // 策略关键词
+        if (/先审后发/.test(seg)) { res.policy = '先审后发'; found = true; }
+        const lv = seg.match(/([135])级禁言/);
+        if (lv) { res.policy = lv[1] + '级禁言+词包'; found = true; }
+
+        // 「关闭互动 / 禁用礼物」这类动词在前 + 宾语在后
+        // 关互动区（互动/弹幕/评论）= 飘屏默认一起关；若另有明确礼物需求，以礼物那条为准（纯净/黑名单同一口径）
+        const mv = seg.match(/(关闭|禁用|关掉|停用|不开|开启|打开|开放|启用)(互动|弹幕|评论)/);
+        if (mv) {
+            const off = /关闭|禁用|关掉|停用|不开/.test(mv[1]);
+            res.danmu = off ? 'off' : 'on'; found = true;
+            setGift(off ? 'off' : 'on', false);
+        }
+        const mg = seg.match(/(关闭|禁用|关掉|停用|不开|开启|打开|开放|启用)(礼物|道具|飘屏)/);
+        if (mg) {
+            setGift(/关闭|禁用|关掉|停用|不开/.test(mg[1]) ? 'off' : 'on', true); found = true;
+        }
+
+        // 「键 + 开/关」形式（可一句话里多个：评论开，礼物关）
+        let m;
+        INTERACT_KV_RE.lastIndex = 0;
+        while ((m = INTERACT_KV_RE.exec(seg)) !== null) {
+            const key = m[1], v = m[2];
+            const off = /关|禁用|停用|不开|×|✗/.test(v);
+            found = true;
+            if (INTERACT_GIFT_KEY_RE.test(key)) {
+                setGift(off ? 'off' : 'on', true);     // 明确的礼物/飘屏需求，优先级最高
+            } else {
+                // 互动区（互动/弹幕互动/互动区弹幕/评论/弹幕）：弹幕跟着；飘屏默认同步关，若另有礼物需求以那条为准
+                res.danmu = off ? 'off' : 'on';
+                setGift(off ? 'off' : 'on', false);
+            }
+        }
+        if (!found) return null;
+        return res;
+    }
+
     function smartParse(raw) {
-        const st = { time: [], title: [], titleCands: [], body: [], bodyCands: [], bodyCandIdx: -1, push: [], account: [], rtmp: [], roomIds: [], poster: [], unknown: [], current: null, currentLabel: null };
+        const st = { time: [], title: [], titleCands: [], body: [], bodyCands: [], bodyCandIdx: -1, push: [], account: [], rtmp: [], roomIds: [], poster: [], unknown: [], interact: { danmu: null, gift: null, giftExplicit: false, policy: '' }, current: null, currentLabel: null };
         const lines = String(raw || '').split(/\r?\n/);
         for (const rawLine of lines) {
             let line = rawLine.replace(/\u00a0/g, ' ').trim();
@@ -1144,7 +3272,24 @@
                 continue;
             }
             // 模板段头（整份模板回贴再解析场景）直接跳过，不混入简介、不计未识别
-            if (/^【?\s*(?:政媒纯净模式|直播推拉流技术需求报备)/.test(line)) { st.current = null; continue; }
+            // 黑名单模式模板里的「互动区弹幕 / 营收礼物道具 / @安娜…」是输出项，回贴时不参与解析
+            if (/^【?\s*(?:政媒纯净模式|黑名单模式|直播推拉流技术需求报备)/.test(line)) { st.current = null; continue; }
+            // 上一份报备回贴时的 @ 行直接跳过
+            if (/^@\s*安娜|^@\s*阿菲/.test(line)) { st.current = null; continue; }
+            // 互动需求（弹幕互动/评论/礼物/飘屏/禁言策略）→ 记录到 st.interact，不混进简介
+            const itr = parseInteractLine(line);
+            if (itr) {
+                if (itr.danmu) st.interact.danmu = itr.danmu;
+                if (itr.gift) {
+                    // 明确写「礼物：开/关」优先级最高（写在「互动：关」前面也一样生效）；
+                    // 泛称「互动区：关」只是默认把飘屏一起关，遇到明确礼物需求就让位
+                    if (itr.giftExplicit) { st.interact.gift = itr.gift; st.interact.giftExplicit = true; }
+                    else if (!st.interact.giftExplicit) { st.interact.gift = itr.gift; }
+                }
+                if (itr.policy) st.interact.policy = itr.policy;
+                st.current = null;
+                continue;
+            }
 
             // ---------- 第一步：URL 提取（地址/流地址/拉流地址 → 拉流地址项） ----------
             const tokens = line.match(MARKED_URL_G);
@@ -1299,15 +3444,35 @@
         let chosen = null;
         if (accountText) {
             const a = accountText.replace(/\s/g, '');
-            chosen = Object.keys(ACCOUNTS).find(k => k === a) || Object.keys(ACCOUNTS).find(k => k.indexOf(a) > -1 || a.indexOf(k) > -1);
+            chosen = Object.keys(ACCOUNTS).find(k => k === a) ||
+                     Object.keys(ACCOUNTS).find(k => k.indexOf(a) > -1 || a.indexOf(k) > -1) ||
+                     (ROOM_TABLE[a] ? a : null) ||
+                     Object.keys(ROOM_TABLE).find(k => k.indexOf(a) > -1 || a.indexOf(k) > -1) ||
+                     null;
         }
         if (!chosen && st.roomIds.length) {
             for (const rid of st.roomIds) {
                 const k = Object.keys(ACCOUNTS).find(key => ACCOUNTS[key].url.endsWith('/' + rid));
                 if (k) { chosen = k; break; }
+                if (ROOM_BY_ID[String(rid)]) { chosen = ROOM_BY_ID[String(rid)]; break; }
+            }
+        }
+        // 文本里直接出现媒体名（短行/账号行才匹配，避免通稿正文误绑）
+        if (!chosen) {
+            for (const line of String(rawText || '').split('\n')) {
+                const ls = line.trim();
+                if (!ls || (!/账号/.test(ls.slice(0, 8)) && ls.length > 18)) continue;
+                const hit = Object.keys(ROOM_TABLE).find(n => n.length >= 2 && ls.indexOf(n) > -1);
+                if (hit) { chosen = hit; break; }
             }
         }
         if (chosen && chosen !== currentAccount) selectAccount(chosen);
+
+        // 互动需求：识别到的开关直接落到策略上（支持「弹幕关 + 礼物开」这种组合）
+        const hasInteract = !!(st.interact && (st.interact.danmu || st.interact.gift || st.interact.policy));
+        if (hasInteract) applyParsedInteract(st.interact);
+        // 纯净模式警惕：文中明确写了「礼物/飘屏：开」就记下来（纯净模式没有礼物功能，输出区会醒目提醒）
+        parsedGiftOn = !!(st.interact && st.interact.giftExplicit && st.interact.gift === 'on');
 
         // 解析摘要（识别了什么、哪些行未归类）
         const chips = [];
@@ -1316,6 +3481,7 @@
         if (body) chips.push('简介 ✓（' + body.replace(/\n/g, '').length + ' 字）');
         if (st.rtmp.length) chips.push('拉流地址 ×' + st.rtmp.length);
         if (push) chips.push('推送语 ✓（仅备查）');
+        if (hasInteract) chips.push('互动 → ' + interactSummaryText());
         if (chosen) chips.push('账号 → ' + chosen);
         let unknownHtml = '';
         if (st.unknown.length) {
@@ -1541,15 +3707,22 @@
         return LOCAL_PROXY + '/?url=' + encodeURIComponent(u);
     }
     // 跨域抓取：本机代理 → 直连 → 多个公共代理兜底（任一可用即可）；allorigins /get 返回 JSON 包裹需解包
+    // 云端地址（CLOUD_API_BASE 非空）即使当前不是云端环境（file:// 本地打开）也追加为兜底通道
     const FETCH_PLANS = [
-        { type: 'html', build: u => proxyUrl(u) },
+        { type: 'html', build: u => proxyUrl(u) }
+    ];
+    if (CLOUD_API_BASE && !isCloud) {
+        const _cloud = CLOUD_API_BASE.replace(/\/+$/, '');
+        FETCH_PLANS.push({ type: 'html', build: u => _cloud + '/?api=proxy&url=' + encodeURIComponent(u) });
+    }
+    FETCH_PLANS.push(
         { type: 'html', build: u => u },
         { type: 'html', build: u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u), unwrap: true },
         { type: 'html', build: u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u) },
         { type: 'html', build: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u) },
         { type: 'html', build: u => 'https://corsproxy.io/?url=' + encodeURIComponent(u) },
         { type: 'md', build: u => 'https://r.jina.ai/' + u }
-    ];
+    );
     // 前端 fetch 超时统一 ≥ live_proxy.py 内的 urlopen 超时（现 18 秒），
     // 这样代理内部能跑完，浏览器不会提前 abort。当前各处超时：
     //   fetchPageText         25000（链接识别）
@@ -1565,11 +3738,13 @@
         } finally { if (timer) clearTimeout(timer); }
     }
     // validate：传入校验回调（用解析结果验证），验证通过的通道才算成功；全部失败时返回第一个非空结果兜底
-    async function fetchPageText(url, validate) {
+    async function fetchPageText(url, validate, opts) {
+        const timeout = (opts && opts.timeout) || 25000;
+        const plans = FETCH_PLANS.slice(0, (opts && opts.maxPlans) || FETCH_PLANS.length);
         let lastErr = null, firstNonEmpty = null;
-        for (const plan of FETCH_PLANS) {
+        for (const plan of plans) {
             try {
-                const res = await fetchWithTimeout(plan.build(url), 25000);
+                const res = await fetchWithTimeout(plan.build(url), timeout);
                 if (!res.ok) { lastErr = new Error('HTTP ' + res.status); continue; }
                 let text = await res.text();
                 if (plan.unwrap) { try { const d = JSON.parse(text); text = (d && d.contents) || ''; } catch (e) { text = ''; } }
@@ -2195,8 +4370,33 @@
         smartParse: smartParse,
         toggleZero: () => zeroToggleBtn.click(),
         setInteractPolicy: (v) => setInteractPolicy(v, true),
-        getState: () => ({ currentAccount, isZeroMode, interactPolicy, coverImageData, generatedFull }),
-        setAccount: (name) => { if (ACCOUNTS[name]) { selectAccount(name); generateOutput(); } }
+        getState: () => ({ currentAccount, isZeroMode, interactPolicy, interactState, parsedGiftOn,
+                           pureGiftWarnVisible: (function () {
+                               const el = document.getElementById('pureGiftWarn');
+                               return !!(el && el.classList.contains('show'));
+                           })(),
+                           interactNote: (document.getElementById('templateNote') || {}).textContent || '',
+                           coverImageData, generatedFull,
+                           pureModeChecked, pureModeState, pureModeFailed }),
+        setPureMode: (clean) => {
+            if (clean === null || clean === undefined) {
+                pureModeToken++; pureModeState = null; pureModeChecked = false; pureModeFailed = false;
+                updateMediaPickUI(); generateOutput(); return;
+            }
+            setPureModeChoice(clean ? 'pure' : 'black');
+            if (isPureAccount(currentAccount)) { pureModeState = !!clean; pureModeChecked = true; generateOutput(); }
+        },
+        setModeChoice: (mode) => setPureModeChoice(mode),
+        setDuty: (payload, pick) => {
+            if (payload) applyDutyPayload(payload);
+            if (pick) dutyPick = pick;
+            buildDutyOptions(); renderDutyRow(); lastDutyKey = ''; onDutyChanged(); generateOutput();
+        },
+        getDuty: () => ({ pick: dutyPick, names: dutyCurrentNames(), mentions: dutyMentions(),
+                          text: (document.getElementById('dutyText') || {}).textContent || '',
+                          hasData: !!dutyData }),
+        dutyAt: (h, m) => { const d = new Date(); d.setHours(h, m, 0, 0); return dutyOnDutyAt(d); },
+        setAccount: (name) => { if (ACCOUNTS[name] || ROOM_TABLE[name]) { selectAccount(name); generateOutput(); } }
     };
 
     // ================= 第四板块：直播间信息智能检查 =================
@@ -2315,6 +4515,61 @@
 
     // ---------- 通用检查渲染：主检查 / 指定直播间检查 共用 ----------
     // m：元素映射；tpl：比对基准（title / body / area 留空则只展示不比对）
+    // ---------- 互动开关：本机浏览器实测（需本地代理 + 已登录B站）----------
+    function probeInteractSwitch(m, roomId, danmuOff) {
+        const slot = m.liveInteract.querySelector('[data-role="iaSlot"]');
+        if (!slot) return;
+        const tplOpen = !danmuOff;
+        const esc = function (v) { return String(v == null ? '' : v).replace(/</g, '&lt;'); };
+        const finish = function (state, note) {
+            let html = '';
+            if (state === '开') html = '<div class="ia-on">\uD83D\uDFE2 互动<b>开启</b></div>';
+            else if (state === '关') html = '<div class="ia-off">\uD83D\uDD34 互动<b>关闭</b></div>';
+            else html = '<div class="ia-na">\u26AA 未能自动判定</div>';
+            if (note) html += '<div class="ia-meta">' + note + '</div>';
+            slot.innerHTML = html;
+            if (state === '开' || state === '关') {
+                const ok = (state === '开') === tplOpen;
+                setBadge(m.interactBadge, ok ? 'match' : 'mismatch', ok ? '\u2705 一致' : '\u274C 不一致');
+            } else {
+                setBadge(m.interactBadge, 'manual', '\uD83D\uDD0D 需人工核对');
+            }
+        };
+        if (!roomId) { finish(null, '缺少房间号'); return; }
+        if (!localProxyOK) {
+            finish(null, '未启动本地代理，无法自动检测（云端模式不支持）');
+            return;
+        }
+        fetchWithTimeout(LOCAL_PROXY + '/interact?room=' + encodeURIComponent(roomId), 200000)
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+                const rec = (j && j.results && j.results[String(roomId)]) || null;
+                if (j && j.ok === false && j.error) { finish(null, esc(j.error)); return; }
+                if (!rec || !rec.state) {
+                    const reason = (rec && rec.reason) ? rec.reason : '未知';
+                    finish(null, '原因：' + esc(reason) + '<br>首次使用请先点底部「登录B站」');
+                    return;
+                }
+                finish(rec.state, '检测方式：本机 Edge 打开直播间实测');
+            })
+            .catch(function (e) {
+                finish(null, '本地代理调用失败：' + esc(e && e.message ? e.message : e));
+            });
+    }
+
+    function bindInteractLogin() {
+        var btn = document.getElementById('btnInteractLogin');
+        if (!btn || btn.dataset.bound) return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', function () {
+            if (!localProxyOK) { showToast('请先启动本地代理后再登录'); return; }
+            fetchWithTimeout(LOCAL_PROXY + '/interact-login', 15000)
+                .then(function () { showToast('已打开 Edge，请在窗口里登录B站后关闭'); })
+                .catch(function () { showToast('调用本地代理失败，请确认黑窗口还在'); });
+        });
+    }
+    bindInteractLogin();
+
     function renderChecks(m, data, tpl) {
         const N = normText;
         const liveTitle = stripHtml(data.title);
@@ -2369,13 +4624,13 @@
             m.tplCoverWrap.appendChild(tip);
         }
         setBadge(m.coverBadge, 'manual', '🔍 需人工核对');
-        // 互动管控：禁言等级 / 弹幕热词由接口自动核对；互动开/关 bilibili 不返回该状态
-        const silentLevel = parseInt(data.room_silent_level, 10) || 0;
-        const hotOn = data.hot_words_status === 1 || data.hot_words_status === '1';
+        // 互动开关：由本机浏览器实测
         m.tplInteract.textContent = tpl.interactPolicy ? tpl.interactPolicy : '弹幕互动：开（无特殊管控）';
-        m.liveInteract.innerHTML = '禁言等级：<b>Lv' + silentLevel + '</b><br>弹幕热词：<b>' + (hotOn ? '开' : '关') + '</b>' +
-            '<div style="font-size:0.74rem;color:var(--text-secondary);margin-top:4px;">互动开/关：bilibili 接口<b>不返回</b>该状态，请在<b>主播后台</b>或直播间<b>目视</b>确认。</div>';
-        setBadge(m.interactBadge, 'manual', '🔍 需主播后台/目视核对');
+        m.liveInteract.innerHTML =
+            '<div data-role="iaSlot">' +
+            '<span class="ia-spin"></span> 正在打开本机 Edge 窗口检测（约 1 分钟，请勿关闭弹出的浏览器）…</div>';
+        setBadge(m.interactBadge, 'manual', '🔄 检测中…');
+        probeInteractSwitch(m, data.room_id || data.roomid, tpl.danmuOff === true);
         // 直播分区
         const parentArea = data.parent_area_name || '';
         const areaName = data.area_name || '';
@@ -2561,7 +4816,8 @@
                 zeroMode: normText(specTplArea.value) === normText('时政'),
                 coverDataUrl: (coverImageData && coverImageData.dataUrl) ? coverImageData.dataUrl : '',
                 coverFilename: (coverImageData && coverImageData.filename) ? coverImageData.filename : '',
-                interactPolicy: interactPolicy
+                interactPolicy: interactSummaryText(),
+                danmuOff: interactState.danmuOff
             });
             specResult.style.display = 'flex';
             const specAnchor = await fetchAnchorName(data.uid);
@@ -2584,12 +4840,14 @@
     async function runCheck() {
         if (checkBtn.disabled) return;
         const acct = ACCOUNTS[currentAccount];
-        const roomId = acct ? extractRoomId(acct.url) : '';
+        // 普通媒体账号不在 ACCOUNTS 里，从 ROOM_TABLE 拿房间号拼直播间链接
+        let roomId = acct ? extractRoomId(acct.url) : '';
+        if (!roomId && ROOM_TABLE[currentAccount]) roomId = String(ROOM_TABLE[currentAccount]);
         if (!roomId) { showToast('未找到该账号的直播间链接', 'error'); return; }
         // 修复：先强制探测本地代理，避免 LOCAL_PROXY 还是默认 8787 时第一通道就走错
         if (!localProxyOK) await probeLocalProxy(false);
         checkAccountName.textContent = currentAccount;
-        if (checkJump) checkJump.href = acct.url;
+        if (checkJump) checkJump.href = acct ? acct.url : getAccountUrl();
         checkStatus.textContent = '正在获取直播间信息…';
         checkStatus.className = 'check-status loading';
         checkResult.style.display = 'none';
@@ -2604,7 +4862,8 @@
                 zeroMode: isZeroMode,
                 coverDataUrl: (coverImageData && coverImageData.dataUrl) ? coverImageData.dataUrl : '',
                 coverFilename: (coverImageData && coverImageData.filename) ? coverImageData.filename : '',
-                interactPolicy: interactPolicy
+                interactPolicy: interactSummaryText(),
+                danmuOff: interactState.danmuOff
             });
             checkResult.style.display = 'flex';
             // 顶部标明正在检查的直播间昵称（get_info 无昵称，用 uid 反查）
@@ -2643,6 +4902,77 @@
         if (!document.hidden) beat();
     });
 })();
+</script>
+<div class="changelog-mask" id="changelogMask" onclick="hideChangelog()"></div>
+<div class="changelog-card" id="changelogCard" role="dialog" aria-label="更新日志">
+    <button class="cl-close" type="button" onclick="hideChangelog()" title="关闭">✕</button>
+    <h3>🗓 更新日志</h3>
+    <div class="cl-sub">直播报备格式化工具 · 智能识别 v4 · 按时间倒序</div>
+
+    <div class="cl-item hot">
+        <div class="cl-date">2026-11-08 11:55<span class="cl-tag">最新</span></div>
+        <div class="cl-body">
+            <ul>
+                <li><b>智能识别会读互动需求了</b>（纯净 / 黑名单都支持）：<code>互动：关</code>、<code>弹幕互动：关</code>、<code>礼物：开</code>、<code>评论开，礼物关</code>、<code>1级禁言+词包</code>、<code>先审后发</code> 等写法都能认，识别后自动同步到「互动开关」下拉框。</li>
+                <li><b>互动值外面套括号 / 引号也能认</b>：<code>弹幕互动：（开）</code>、<code>礼物互动：（关）</code>、<code>弹幕互动:(开)</code>、<code>弹幕互动：√ / ×</code>、<code>弹幕互动＝开</code> 均可；新增 <code>礼物互动</code> / <code>礼物动态</code> / <code>互动区</code> / <code>聊天区</code> 等别名，不再把「礼物互动：关」误当成「互动：关」而覆盖弹幕开关。</li>
+                <li><b>纯净模式：飘屏跟互动同步，忽略礼物开关</b>。识别到礼物需求（<code>礼物：开</code>）无论互动开关，输出区顶部弹红色警示「该直播间在纯净模式，识别到礼物需求，请评估是否移出」。</li>
+                <li><b>非六家央媒不再输出【直播推拉流技术需求报备】</b>——即使给了拉流地址也不输出（地址会提示已忽略，不进模板）。</li>
+                <li><b>黑名单模式没给标题 / 简介不留空标签</b>：模板自动省略该行，顶部给一句灰色小提醒，手动补上后自动恢复。</li>
+                <li>下拉框新增「仅关礼物 / 飘屏（弹幕互动开）」；纯净模式下该项自动隐藏。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-07</div>
+        <div class="cl-body">
+            <ul>
+                <li><b>@ 行自动追加当班直播审核</b>：<code>@安娜(peixi) @阿菲(mengna02) @郭尔欢</code>（前两人带 B站 ID，当班人只写名字；没读到值班表时第三人显示 <code>@当班审核</code> 占位）。</li>
+                <li><b>值班表自动同步上线</b>：每天 08:30 / 11:30 / 14:30 / 17:30 / 20:30 自动抓当天 sheet（新增 sheet 零配置）→ 更新 live.json → 上传 GitHub，全组同事打开网页即拿到同一份值班表。</li>
+                <li>账号行支持手动切换班次；值班表过期不会误用。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-06</div>
+        <div class="cl-body">
+            <ul>
+                <li><b>新增连体报备</b>：识别为「中新视频 / 中国新闻网」时，一次输出两家的【纯净模式互动管控】+ 标题 / 时间 / 简介 + 弹幕互动 / 飘屏。</li>
+                <li><b>检测失败不再默认「纯净」</b>：改为提示人工选择模式（账号行常驻「模式：纯净 / 黑名单」按钮）；央视新闻、新华社、人民日报 恒判纯净。</li>
+                <li><b>「及信息修改」模板收紧</b>：只有六家央媒（央视新闻、新华社、人民日报、中国网直播、央视财经、共青团中央）才输出。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-05 22:55</div>
+        <div class="cl-body">
+            <ul>
+                <li><b>纯净 / 黑名单判据重写</b>：改用「接口 7 个模块骨架化（null 数 ≥3）」判定，修复观察者网 948391、23046247 被误判纯净的问题。</li>
+                <li><b>检测失败不误判黑名单</b>：接口偶发 400 / 超时时重试一次，仍失败按「纯净」完整模板输出并在徽标标注「检测失败·按纯净输出」。</li>
+                <li><b>搜索结果房间号可点击</b>：房间号前自动加 <code>live.bilibili.com/</code>，点开即进直播间；同时修复普通媒体提示「未找到直播间链接」。</li>
+                <li>两通道并行竞速（接口 + 页面内嵌数据），检测从 12~25s 缩短，并加状态提示条。</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<script>
+    function showChangelog() {
+        var m = document.getElementById('changelogMask');
+        var c = document.getElementById('changelogCard');
+        if (m) m.classList.add('show');
+        if (c) c.classList.add('show');
+    }
+    function hideChangelog() {
+        var m = document.getElementById('changelogMask');
+        var c = document.getElementById('changelogCard');
+        if (m) m.classList.remove('show');
+        if (c) c.classList.remove('show');
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') hideChangelog();
+    });
 </script>
 </body>
 </html>
