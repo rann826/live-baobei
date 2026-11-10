@@ -353,7 +353,7 @@
     <h1>📺 直播报备格式化工具</h1>
     <span class="page-badge">智能识别 v4</span>
     <span class="page-sub">整段粘贴 → 自动解析 → 表单确认 → 一键复制</span>
-    <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-08 15:10（修值班显示：当班人旁标的是当前时段，不再误显示下一班的时段 · 点此看完整日志）</span>
+    <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-10 09:50（值班表过期提示改为可执行文案；班表同步失败本机会弹通知 · 点此看完整日志）</span>
 </div>
 <div class="app-container">
     <div class="card card-accent-blue">
@@ -2171,7 +2171,7 @@
         if (!dot || !txt) return;
         const names = dutyCurrentNames();
         const stale = (dutyData && dutyData.date && dutyData.date !== dutyTodayKey())
-            ? '（值班表是 ' + dutyData.date + ' 的，可能未更新）' : '';
+            ? '（值班表还是 ' + dutyData.date + ' 的，未更新到今日 —— 请联系值班人重新登录「值班速览」后点刷新）' : '';
         if (!dutyData) {
             dot.className = 'duty-dot off';
             txt.innerHTML = '当班直播审核：<b>未获取</b> <span class="duty-sub">点「导入值班表」，或抓取后点刷新</span>';
@@ -4917,7 +4917,17 @@
     <div class="cl-sub">直播报备格式化工具 · 智能识别 v4 · 按时间倒序</div>
 
     <div class="cl-item hot">
-        <div class="cl-date">2026-11-08 15:10<span class="cl-tag">最新</span></div>
+        <div class="cl-date">2026-11-10 09:50<span class="cl-tag">最新</span></div>
+        <div class="cl-body">
+            <ul>
+                <li><b>值班表过期提示改成能照着做的文案</b>：班表不是今天的时，提示「请联系值班人重新登录『值班速览』后点刷新」，一眼知道找谁做什么。</li>
+                <li><b>班表同步失败会在本机弹通知</b>（Windows 通知中心）：没抓到今天的数据 / 抓到的日期不是今天 / 上传 GitHub 失败，电脑右下角都会提醒一次。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-08 15:10</div>
         <div class="cl-body">
             <ul>
                 <li><b>修值班显示错位</b>：「当班直播审核」里当班人名字旁标注的时段，改显示<b>当前时段</b>（如 15:00-18:00），不再误显示下一班的时段（之前阳羊 15-18 当班却标成 18:00-21:00）。</li>
@@ -4951,18 +4961,7 @@
         </div>
     </div>
 
-    <div class="cl-item">
-        <div class="cl-date">2026-11-06</div>
-        <div class="cl-body">
-            <ul>
-                <li><b>新增连体报备</b>：识别为「中新视频 / 中国新闻网」时，一次输出两家的【纯净模式互动管控】+ 标题 / 时间 / 简介 + 弹幕互动 / 飘屏。</li>
-                <li><b>检测失败不再默认「纯净」</b>：改为提示人工选择模式（账号行常驻「模式：纯净 / 黑名单」按钮）；央视新闻、新华社、人民日报 恒判纯净。</li>
-                <li><b>「及信息修改」模板收紧</b>：只有六家央媒（央视新闻、新华社、人民日报、中国网直播、央视财经、共青团中央）才输出。</li>
-            </ul>
-        </div>
     </div>
-
-</div>
 <script>
     function showChangelog() {
         var m = document.getElementById('changelogMask');
