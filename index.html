@@ -353,7 +353,7 @@
     <h1>📺 直播报备格式化工具</h1>
     <span class="page-badge">智能识别 v4</span>
     <span class="page-sub">整段粘贴 → 自动解析 → 表单确认 → 一键复制</span>
-    <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-10 09:50（值班表过期提示改为可执行文案；班表同步失败本机会弹通知 · 点此看完整日志）</span>
+    <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-11 16:45（观察者网：醒目留言（SC）/ 购物车 改为按输入判断，没写默认开启 · 点此看完整日志）</span>
 </div>
 <div class="app-container">
     <div class="card card-accent-blue">
@@ -1999,6 +1999,8 @@
     // 连体报备账号组：中新视频 / 中国新闻网 常同步开关播、播同样内容，一次输出两家的互动管控
     const PAIRED_ACCOUNTS = ['中新视频', '中国新闻网'];
     const PAIRED_PEER = { '中新视频': '中国新闻网', '中国新闻网': '中新视频' };
+    // 观察者网：黑名单模板固定多两行（页面没有对应开关，恒为「开启」）
+    const SC_CART_ACCOUNTS = ['观察者网'];
     // 纯净/黑名单三态：true=纯净，false=黑名单，null=未判定（检测中或检测失败，交给人工选，绝不默认纯净）
     let pureModeState = null;
     let pureModeChecked = false;
@@ -2370,6 +2372,8 @@
     let interactState = { danmuOff: false, giftOff: false, policy: '' };
     // 本次智能识别是否明确写了「礼物/飘屏：开」——纯净模式没有礼物功能，命中要在输出区醒目提醒
     let parsedGiftOn = false;
+    // 观察者网专用：醒目留言（SC）/ 购物车 的识别结果（null = 输入里没写 → 输出默认「开启」）
+    let parsedScCart = { sc: null, cart: null };
     let generatedPart1 = '';
     let generatedPart2 = '';
     let generatedFull = '';
@@ -2633,6 +2637,15 @@
     function currentPureMode() {
         if (isPureAccount(currentAccount)) return true;
         return pureModeState === true;
+    }
+    // 观察者网：黑名单模板固定两行「醒目留言（SC）/ 购物车」。
+    // 值来自输入文本（写「关」就输出「关闭」），输入里没提 → 默认「开启」。只对观察者网生效。
+    function scCartLines() {
+        if (SC_CART_ACCOUNTS.indexOf(currentAccount) < 0) return [];
+        return [
+            '醒目留言（SC）：' + (parsedScCart.sc === 'off' ? '关闭' : '开启'),
+            '购物车：' + (parsedScCart.cart === 'off' ? '关闭' : '开启')
+        ];
     }
     // 一句话摘要（供提示语与解析摘要用）
     // 纯净模式没有礼物功能：飘屏只跟互动开关同步，礼物开关不参与
@@ -2919,6 +2932,7 @@
             if (blacklistMode) {
                 part1.push('互动区弹幕：' + danmuVal);
                 part1.push('营收礼物道具：' + piaoOnBlack);
+                scCartLines().forEach(l => part1.push(l));
                 part1.push(blacklistMentions());
             } else {
                 part1.push('弹幕互动：' + danmuVal);
@@ -2953,6 +2967,7 @@
                 // 黑名单模式：字段名对齐 bilibili 后台开关 —— 互动区弹幕 / 营收礼物道具
                 part1.push('互动区弹幕：' + danmuVal);
                 part1.push('营收礼物道具：' + piaoOnBlack);
+                scCartLines().forEach(l => part1.push(l));
                 part1.push(blacklistMentions());
             } else {
                 part1.push('弹幕互动：' + danmuVal);
@@ -3198,7 +3213,10 @@
     // 支持这些写法：弹幕互动：关 / 礼物：开 / 评论开，礼物关 / 互动开 / 互动关 / 关闭互动 /
     //              营收礼物道具：关 / 飘屏：关 / 1级禁言+词包 / 先审后发
     // 返回 { danmu:'on'|'off'|null, gift:'on'|'off'|null, policy:'' } ；不是互动行则返回 null
-    const INTERACT_HINT_RE = /互动|弹幕|评论|礼物|道具|飘屏|禁言|先审后发|打赏|聊天/;
+    // 含观察者网专用的「醒目留言（SC）/ 购物车」——只在黑名单模式输出，值按输入判断，没写默认开启
+    const INTERACT_HINT_RE = /互动|弹幕|评论|礼物|道具|飘屏|禁言|先审后发|打赏|聊天|醒目留言|购物车|小黄车/;
+    // 「SC」单写也要认（前后不能紧贴英文字母，避免 script/screen 这类误命中）
+    const SC_HINT_RE = /醒目留言|购物车|小黄车|(?:^|[^A-Za-z])sc(?:[^A-Za-z]|$)/i;
     // 键别名「长的在前」：礼物互动/礼物动态 必须在 礼物 前；互动区弹幕 在 互动区 前；弹幕互动 在 弹幕 前。
     // 值允许被括号/引号/书名号包着（（开）、(关)、"开"、【关】），也允许打勾打叉。
     const INTERACT_KV_RE = /(营收礼物道具|礼物互动|礼物动态|礼物道具|互动区弹幕|弹幕互动|互动弹幕|互动区|评论区|聊天区|评论|弹幕|聊天|礼物|道具|飘屏|打赏|互动)\s*(开|开启|打开|开放|启用|开起|已开|关|关闭|禁用|关掉|停用|不开|已关|√|✓|×|✗)/g;
@@ -3218,11 +3236,11 @@
         if (!raw) return null;
         // 只认短句，长段落（通稿正文里提到“互动/礼物”）不参与，避免误伤简介
         if (raw.length > 26 || /[。！？!?]/.test(raw)) return null;
-        if (!INTERACT_HINT_RE.test(raw)) return null;
+        if (!INTERACT_HINT_RE.test(raw) && !SC_HINT_RE.test(raw)) return null;
         if (/^@|直播间|地址|标题|简介|通稿/.test(raw)) return null;
 
         const seg = normInteractLine(raw);
-        const res = { danmu: null, gift: null, giftImplied: false, giftExplicit: false, policy: '' };
+        const res = { danmu: null, gift: null, giftImplied: false, giftExplicit: false, policy: '', sc: null, cart: null };
         let found = false;
         // 建立/覆盖礼物开关：明确写「礼物/道具/飘屏」的优先，泛称「互动区」只是默认同步
         const setGift = (val, explicit) => {
@@ -3249,6 +3267,22 @@
             setGift(/关闭|禁用|关掉|停用|不开/.test(mg[1]) ? 'off' : 'on', true); found = true;
         }
 
+        // 观察者网专用两项：醒目留言（SC）/ 购物车。
+        // 只记录不参与互动策略；值按输入判断（写「关」就是关），没写时输出端默认「开启」。
+        const setScCart = (key, v) => {
+            const off = /关|禁用|停用|不开|×|✗/.test(v);
+            if (/购物车|小黄车/.test(key)) res.cart = off ? 'off' : 'on';
+            else res.sc = off ? 'off' : 'on';
+        };
+        // 动词在前：关闭醒目留言 / 开启购物车
+        const SC_VERB_RE = /(关闭|禁用|关掉|停用|不开|开启|打开|开放|启用)(醒目留言|sc|购物车|小黄车)/gi;
+        let msc;
+        while ((msc = SC_VERB_RE.exec(seg)) !== null) { setScCart(msc[2], msc[1]); found = true; }
+        // 键 + 值：醒目留言：关 / 醒目留言（SC）：开 / SC=关 / 购物车：（关）
+        // 键别名「长的在前」：醒目留言(SC) 必须在 sc 前
+        const SC_KV_RE = /(醒目留言(?:sc)?|sc|购物车|小黄车)(开|开启|打开|开放|启用|已开|关|关闭|禁用|关掉|停用|不开|已关|√|✓|×|✗)/gi;
+        while ((msc = SC_KV_RE.exec(seg)) !== null) { setScCart(msc[1], msc[2]); found = true; }
+
         // 「键 + 开/关」形式（可一句话里多个：评论开，礼物关）
         let m;
         INTERACT_KV_RE.lastIndex = 0;
@@ -3269,7 +3303,7 @@
     }
 
     function smartParse(raw) {
-        const st = { time: [], title: [], titleCands: [], body: [], bodyCands: [], bodyCandIdx: -1, push: [], account: [], rtmp: [], roomIds: [], poster: [], unknown: [], interact: { danmu: null, gift: null, giftExplicit: false, policy: '' }, current: null, currentLabel: null };
+        const st = { time: [], title: [], titleCands: [], body: [], bodyCands: [], bodyCandIdx: -1, push: [], account: [], rtmp: [], roomIds: [], poster: [], unknown: [], interact: { danmu: null, gift: null, giftExplicit: false, policy: '', sc: null, cart: null }, current: null, currentLabel: null };
         const lines = String(raw || '').split(/\r?\n/);
         for (const rawLine of lines) {
             let line = rawLine.replace(/\u00a0/g, ' ').trim();
@@ -3294,6 +3328,8 @@
                     else if (!st.interact.giftExplicit) { st.interact.gift = itr.gift; }
                 }
                 if (itr.policy) st.interact.policy = itr.policy;
+                if (itr.sc) st.interact.sc = itr.sc;
+                if (itr.cart) st.interact.cart = itr.cart;
                 st.current = null;
                 continue;
             }
@@ -3480,6 +3516,11 @@
         if (hasInteract) applyParsedInteract(st.interact);
         // 纯净模式警惕：文中明确写了「礼物/飘屏：开」就记下来（纯净模式没有礼物功能，输出区会醒目提醒）
         parsedGiftOn = !!(st.interact && st.interact.giftExplicit && st.interact.gift === 'on');
+        // 观察者网专用：醒目留言（SC）/ 购物车（本次解析覆盖，未写则为 null → 输出默认开启）
+        parsedScCart = {
+            sc: (st.interact && st.interact.sc) || null,
+            cart: (st.interact && st.interact.cart) || null
+        };
 
         // 解析摘要（识别了什么、哪些行未归类）
         const chips = [];
@@ -4377,7 +4418,7 @@
         smartParse: smartParse,
         toggleZero: () => zeroToggleBtn.click(),
         setInteractPolicy: (v) => setInteractPolicy(v, true),
-        getState: () => ({ currentAccount, isZeroMode, interactPolicy, interactState, parsedGiftOn,
+        getState: () => ({ currentAccount, isZeroMode, interactPolicy, interactState, parsedGiftOn, parsedScCart,
                            pureGiftWarnVisible: (function () {
                                const el = document.getElementById('pureGiftWarn');
                                return !!(el && el.classList.contains('show'));
@@ -4547,7 +4588,12 @@
             finish(null, '未启动本地代理，无法自动检测（云端模式不支持）');
             return;
         }
-        fetchWithTimeout(LOCAL_PROXY + '/interact?room=' + encodeURIComponent(roomId), 200000)
+        // 先探测代理是否支持互动检测（新版才有 /interact-info；旧版会把 /interact 当通用转发，返回 HTML）
+        fetchWithTimeout(LOCAL_PROXY + '/interact-info', 8000)
+            .then(function (r) { return r.json(); })
+            .then(function () {
+                return fetchWithTimeout(LOCAL_PROXY + '/interact?room=' + encodeURIComponent(roomId), 200000);
+            })
             .then(function (r) { return r.json(); })
             .then(function (j) {
                 const rec = (j && j.results && j.results[String(roomId)]) || null;
@@ -4560,7 +4606,13 @@
                 finish(rec.state, '检测方式：本机 Edge 打开直播间实测');
             })
             .catch(function (e) {
-                finish(null, '本地代理调用失败：' + esc(e && e.message ? e.message : e));
+                const msg = String(e && e.message ? e.message : e);
+                // 旧版代理没有互动检测路由，/interact 被通用转发到B站返回 HTML → JSON 解析炸出 "Unexpected token '<'"
+                if (msg.indexOf("Unexpected token") >= 0 || msg.indexOf('<') === 0 || msg.indexOf('JSON') >= 0) {
+                    finish(null, '本地代理版本过旧（不含互动检测功能）。<br>请用最新安装包里的 <b>live_proxy.py</b> 重启黑窗口（关掉旧的再开）。');
+                    return;
+                }
+                finish(null, '本地代理调用失败：' + esc(msg));
             });
     }
 
@@ -4917,7 +4969,36 @@
     <div class="cl-sub">直播报备格式化工具 · 智能识别 v4 · 按时间倒序</div>
 
     <div class="cl-item hot">
-        <div class="cl-date">2026-11-10 09:50<span class="cl-tag">最新</span></div>
+        <div class="cl-date">2026-11-11 16:45<span class="cl-tag">最新</span></div>
+        <div class="cl-body">
+            <ul>
+                <li><b>醒目留言（SC）/ 购物车 改为按输入判断</b>：不再写死「开启」。识别的写法：<code>醒目留言（SC）：关</code>、<code>SC 关</code>、<code>购物车：关</code>、<code>关闭购物车</code>、<code>醒目留言（开），购物车（关）</code> 等；<b>输入里没提到 → 默认输出「开启」</b>。</li>
+                <li>仅在<b>观察者网 + 黑名单模式</b>时输出这两行（位置仍在 <code>@安娜(peixi) …</code> 正上方），别的账号、纯净模式都不出现。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-11 16:30</div>
+        <div class="cl-body">
+            <ul>
+                <li><b>观察者网黑名单模板自动多两行</b>：<code>醒目留言（SC）</code>、<code>购物车</code>，位置在 <code>@安娜(peixi) …</code> 那一行的正上方。别的账号不受影响。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-11 10:20</div>
+        <div class="cl-body">
+            <ul>
+                <li><b>互动开关检测报错改成人话</b>：本地代理是旧版时，不再显示 <code>Unexpected token '&lt;'</code> 这类天书，改为「本地代理版本过旧，请用最新安装包里的 live_proxy.py 重启黑窗口」。</li>
+                <li>说明：互动开关自动检测只能在本机做（可见 Edge 实测，B站接口不返回该状态，云端代理原理上做不到）；检测不了时按「需人工核对」处理，不影响模板输出。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-10 09:50</div>
         <div class="cl-body">
             <ul>
                 <li><b>值班表过期提示改成能照着做的文案</b>：班表不是今天的时，提示「请联系值班人重新登录『值班速览』后点刷新」，一眼知道找谁做什么。</li>
@@ -4936,30 +5017,9 @@
         </div>
     </div>
 
-    <div class="cl-item">
-        <div class="cl-date">2026-11-08 11:55</div>
-        <div class="cl-body">
-            <ul>
-                <li><b>智能识别会读互动需求了</b>（纯净 / 黑名单都支持）：<code>互动：关</code>、<code>弹幕互动：关</code>、<code>礼物：开</code>、<code>评论开，礼物关</code>、<code>1级禁言+词包</code>、<code>先审后发</code> 等写法都能认，识别后自动同步到「互动开关」下拉框。</li>
-                <li><b>互动值外面套括号 / 引号也能认</b>：<code>弹幕互动：（开）</code>、<code>礼物互动：（关）</code>、<code>弹幕互动:(开)</code>、<code>弹幕互动：√ / ×</code>、<code>弹幕互动＝开</code> 均可；新增 <code>礼物互动</code> / <code>礼物动态</code> / <code>互动区</code> / <code>聊天区</code> 等别名，不再把「礼物互动：关」误当成「互动：关」而覆盖弹幕开关。</li>
-                <li><b>纯净模式：飘屏跟互动同步，忽略礼物开关</b>。识别到礼物需求（<code>礼物：开</code>）无论互动开关，输出区顶部弹红色警示「该直播间在纯净模式，识别到礼物需求，请评估是否移出」。</li>
-                <li><b>非六家央媒不再输出【直播推拉流技术需求报备】</b>——即使给了拉流地址也不输出（地址会提示已忽略，不进模板）。</li>
-                <li><b>黑名单模式没给标题 / 简介不留空标签</b>：模板自动省略该行，顶部给一句灰色小提醒，手动补上后自动恢复。</li>
-                <li>下拉框新增「仅关礼物 / 飘屏（弹幕互动开）」；纯净模式下该项自动隐藏。</li>
-            </ul>
-        </div>
-    </div>
+    
 
-    <div class="cl-item">
-        <div class="cl-date">2026-11-07</div>
-        <div class="cl-body">
-            <ul>
-                <li><b>@ 行自动追加当班直播审核</b>：<code>@安娜(peixi) @阿菲(mengna02) @郭尔欢</code>（前两人带 B站 ID，当班人只写名字；没读到值班表时第三人显示 <code>@当班审核</code> 占位）。</li>
-                <li><b>值班表自动同步上线</b>：每天 08:30 / 11:30 / 14:30 / 17:30 / 20:30 自动抓当天 sheet（新增 sheet 零配置）→ 更新 live.json → 上传 GitHub，全组同事打开网页即拿到同一份值班表。</li>
-                <li>账号行支持手动切换班次；值班表过期不会误用。</li>
-            </ul>
-        </div>
-    </div>
+    
 
     </div>
 <script>
