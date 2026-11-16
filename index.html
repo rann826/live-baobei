@@ -29,7 +29,7 @@
         .page-header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.01em; }
         .page-header .page-badge { font-size: 0.7rem; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; padding: 3px 10px; border-radius: 999px; }
         .page-header .page-sub { font-size: 0.82rem; color: var(--text-secondary); }
-        .page-header .page-build { font-size: 0.7rem; font-weight: 600; color: #15803d; background: #f0fdf4; border: 1px dashed #86efac; padding: 3px 10px; border-radius: 6px; margin-left: auto; cursor: pointer; }
+        .page-header .page-build { font-size: 0.7rem; font-weight: 600; color: #15803d; background: #f0fdf4; border: 1px dashed #86efac; padding: 3px 10px; border-radius: 6px; cursor: pointer; }
         .page-header .page-build:hover { background: #dcfce7; border-style: solid; }
         .changelog-mask { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 9998; }
         .changelog-mask.show { display: block; }
@@ -54,6 +54,57 @@
             background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 0 4px; color: #0f172a; }
         .cl-body ul { margin: 2px 0 0 16px; }
         .cl-body li { margin-bottom: 2px; }
+        /* ---- 顶部「专项策略」入口 ---- */
+        .page-header .page-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+        .page-header .page-board { font-size: .7rem; font-weight: 700; color: #fff; background: #2563eb;
+            border: 1px solid #1d4ed8; padding: 4px 11px; border-radius: 6px; cursor: pointer; font-family: inherit;
+            box-shadow: 0 1px 2px rgba(37,99,235,.25); transition: background .15s, transform .1s; }
+        .page-header .page-board:hover { background: #1d4ed8; }
+        .page-header .page-board:active { transform: translateY(1px); }
+        /* ---- 看板浮层 ---- */
+        .board-mask { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 9998; }
+        .board-mask.show { display: block; }
+        .board-card { display: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%);
+            width: min(820px, 94vw); max-height: 86vh; overflow: auto; background: #fff; border-radius: 16px;
+            box-shadow: 0 24px 64px rgba(15,23,42,.3); z-index: 9999; padding: 20px 24px 24px; }
+        .board-card.show { display: block; }
+        .board-card h3 { font-size: 1.02rem; font-weight: 800; margin-bottom: 3px; }
+        .board-card .board-sub { font-size: .72rem; color: var(--text-secondary); margin-bottom: 14px; }
+        .board-card .board-sub b { color: #2563eb; }
+        .board-form-wrap { border: 1px solid #dbeafe; background: #f8fbff; border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; }
+        .board-form-wrap > summary { font-size: .8rem; font-weight: 700; color: #1d4ed8; cursor: pointer; list-style: none; }
+        .board-form-wrap > summary::-webkit-details-marker { display: none; }
+        .board-form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .board-form input, .board-form textarea { font-family: inherit; font-size: .82rem; color: var(--text);
+            border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; background: #fff; width: 100%; resize: vertical; }
+        .board-form input:focus, .board-form textarea:focus { outline: none; border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.18); }
+        .board-form-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .board-submit { font-family: inherit; font-size: .8rem; font-weight: 700; color: #fff; background: #2563eb;
+            border: 0; border-radius: 8px; padding: 7px 16px; cursor: pointer; }
+        .board-submit:hover { background: #1d4ed8; }
+        .board-submit:disabled { background: #93c5fd; cursor: default; }
+        .board-msg { font-size: .74rem; color: var(--text-secondary); }
+        .board-msg.err { color: #dc2626; }
+        .board-msg.ok { color: #15803d; }
+        .board-list { display: flex; flex-direction: column; gap: 10px; }
+        .board-item { border: 1px solid #e2e8f0; border-left: 3px solid #2563eb; border-radius: 10px; padding: 10px 12px; background: #fff; }
+        .board-item-head { display: flex; align-items: flex-start; gap: 8px; }
+        .board-item-title { font-size: .86rem; font-weight: 800; color: #0f172a; flex: 1; word-break: break-word; }
+        .board-del { font-family: inherit; font-size: .68rem; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca;
+            border-radius: 6px; padding: 1px 7px; cursor: pointer; flex: none; }
+        .board-del:hover { background: #fee2e2; }
+        .board-item-body { font-size: .8rem; line-height: 1.8; color: #334155; margin-top: 5px; word-break: break-word; }
+        .board-item-meta { font-size: .68rem; color: var(--text-secondary); margin-top: 7px; }
+        .board-empty { font-size: .8rem; color: var(--text-secondary); text-align: center; padding: 26px 10px; }
+        .board-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
+        .board-refresh { font-family: inherit; font-size: .72rem; color: #475569; background: #f1f5f9; border: 1px solid #e2e8f0;
+            border-radius: 7px; padding: 3px 10px; cursor: pointer; }
+        .board-refresh:hover { background: #e2e8f0; }
+        .board-tools-right { display: flex; align-items: center; gap: 6px; flex: none; }
+        .board-admin { font-family: inherit; font-size: .72rem; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
+            border-radius: 7px; padding: 3px 10px; cursor: pointer; }
+        .board-admin:hover { background: #fef3c7; }
+        .board-admin.on { color: #fff; background: #b45309; border-color: #92400e; font-weight: 700; }
         .app-container { max-width: 1760px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.05fr 1.1fr 1fr; gap: 18px; align-items: start; }
         @media (max-width: 1500px) { .app-container { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 900px) { .app-container { grid-template-columns: 1fr; gap: 16px; } }
@@ -353,7 +404,10 @@
     <h1>📺 直播报备格式化工具</h1>
     <span class="page-badge">智能识别 v4</span>
     <span class="page-sub">整段粘贴 → 自动解析 → 表单确认 → 一键复制</span>
-    <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-11 16:45（观察者网：醒目留言（SC）/ 购物车 改为按输入判断，没写默认开启 · 点此看完整日志）</span>
+    <span class="page-tools">
+        <button class="page-board" id="boardBtn" type="button" onclick="showBoard()" title="直播专项策略一览：所有人都能上传，点开看全部">📌 专项策略</button>
+        <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-16 15:40（专项策略看板加「🔑 管理员登录」，登录后可删除任何人上传的卡片 · 点此看完整日志）</span>
+    </span>
 </div>
 <div class="app-container">
     <div class="card card-accent-blue">
@@ -4969,7 +5023,27 @@
     <div class="cl-sub">直播报备格式化工具 · 智能识别 v4 · 按时间倒序</div>
 
     <div class="cl-item hot">
-        <div class="cl-date">2026-11-11 16:45<span class="cl-tag">最新</span></div>
+        <div class="cl-date">2026-11-16 15:40<span class="cl-tag">最新</span></div>
+        <div class="cl-body">
+            <ul>
+                <li><b>看板加「🔑 管理员登录」</b>：点一下输口令，登录后<b>每条卡片都会出现「删除」</b>，可以删掉任何人上传的内容（有效期 30 天，随时可点「退出」）。普通同事看不到这个删除按钮，也删不了别人的。</li>
+                <li>普通上传者照旧凭本机保存的删除码删自己那条。管理员删掉的记录在仓库提交历史里可找回。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-16 15:00</div>
+        <div class="cl-body">
+            <ul>
+                <li><b>顶部新增「📌 专项策略」共享看板</b>（在更新日志左边）：所有人都能上传一条「专项事件 + 具体策略」，卡片式展示，点开才看得全。</li>
+                <li>上传后可凭<b>删除码</b>删自己那条；删除码会自动存在本机浏览器（换电脑就没了）。内容存云端，同事打开同一网址就能看到。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-11 16:45</div>
         <div class="cl-body">
             <ul>
                 <li><b>醒目留言（SC）/ 购物车 改为按输入判断</b>：不再写死「开启」。识别的写法：<code>醒目留言（SC）：关</code>、<code>SC 关</code>、<code>购物车：关</code>、<code>关闭购物车</code>、<code>醒目留言（开），购物车（关）</code> 等；<b>输入里没提到 → 默认输出「开启」</b>。</li>
@@ -4987,41 +5061,47 @@
         </div>
     </div>
 
-    <div class="cl-item">
-        <div class="cl-date">2026-11-11 10:20</div>
-        <div class="cl-body">
-            <ul>
-                <li><b>互动开关检测报错改成人话</b>：本地代理是旧版时，不再显示 <code>Unexpected token '&lt;'</code> 这类天书，改为「本地代理版本过旧，请用最新安装包里的 live_proxy.py 重启黑窗口」。</li>
-                <li>说明：互动开关自动检测只能在本机做（可见 Edge 实测，B站接口不返回该状态，云端代理原理上做不到）；检测不了时按「需人工核对」处理，不影响模板输出。</li>
-            </ul>
-        </div>
-    </div>
+    
 
-    <div class="cl-item">
-        <div class="cl-date">2026-11-10 09:50</div>
-        <div class="cl-body">
-            <ul>
-                <li><b>值班表过期提示改成能照着做的文案</b>：班表不是今天的时，提示「请联系值班人重新登录『值班速览』后点刷新」，一眼知道找谁做什么。</li>
-                <li><b>班表同步失败会在本机弹通知</b>（Windows 通知中心）：没抓到今天的数据 / 抓到的日期不是今天 / 上传 GitHub 失败，电脑右下角都会提醒一次。</li>
-            </ul>
-        </div>
-    </div>
+    
 
-    <div class="cl-item">
-        <div class="cl-date">2026-11-08 15:10</div>
-        <div class="cl-body">
-            <ul>
-                <li><b>修值班显示错位</b>：「当班直播审核」里当班人名字旁标注的时段，改显示<b>当前时段</b>（如 15:00-18:00），不再误显示下一班的时段（之前阳羊 15-18 当班却标成 18:00-21:00）。</li>
-                <li>换班提示保留：X 分钟后换班（下一班开始时间 + 人名）。</li>
-            </ul>
-        </div>
-    </div>
+    
 
     
 
     
 
     </div>
+
+<div class="board-mask" id="boardMask" onclick="hideBoard()"></div>
+<div class="board-card" id="boardCard" role="dialog" aria-label="直播专项策略一览">
+    <button class="cl-close" type="button" onclick="hideBoard()" title="关闭">✕</button>
+    <h3>📌 直播专项策略一览</h3>
+    <div class="board-sub">所有人可上传 · 上传者凭删除码删自己那条 · 管理员可删任意条 · <span id="boardStat">加载中…</span></div>
+
+    <details class="board-form-wrap">
+        <summary>➕ 上传一条专项策略</summary>
+        <div class="board-form">
+            <input id="boardTitle" maxlength="80" placeholder="专项事件（必填，例：双十一大促直播 / 某发布会直播）">
+            <textarea id="boardBody" rows="4" maxlength="4000" placeholder="具体策略（必填，例：互动区弹幕关、礼物关；提前 30 分钟开播预热；标题前缀加【专场】）"></textarea>
+            <input id="boardAuthor" maxlength="20" placeholder="你的名字（可选，便于大家找你确认）">
+            <div class="board-form-row">
+                <button class="board-submit" id="boardSubmit" type="button" onclick="boardAdd()">提交上传</button>
+                <span class="board-msg" id="boardMsg"></span>
+            </div>
+        </div>
+    </details>
+
+    <div class="board-tools">
+        <span class="board-msg" id="boardMode"></span>
+        <span class="board-tools-right">
+            <button class="board-admin" id="boardAdminBtn" type="button" onclick="boardAdminToggle()"
+                title="网页主人专用：输入口令后，可以删除任何人上传的卡片">🔑 管理员登录</button>
+            <button class="board-refresh" type="button" onclick="boardLoad(true)">🔄 刷新</button>
+        </span>
+    </div>
+    <div class="board-list" id="boardList"></div>
+</div>
 <script>
     function showChangelog() {
         var m = document.getElementById('changelogMask');
@@ -5038,6 +5118,289 @@
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') hideChangelog();
     });
+</script>
+
+<script>
+/* ---------- 直播专项策略一览（共享看板） ---------- */
+(function () {
+    var CLOUD = (window.CLOUD_API_BASE || '').replace(/\/+$/, '');
+    var LOCAL_KEY = 'boardLocalItems';
+    var CODES_KEY = 'boardDelCodes';
+    var ADMIN_KEY = 'boardAdminToken';   // 管理员令牌（口令校验通过后云端签发的，30 天有效）
+    var state = { items: [], loading: false };
+
+    function qs(name) {
+        try { return new URLSearchParams(location.search).get(name) || ''; } catch (e) { return ''; }
+    }
+    // 后端地址：优先用配置的云函数；页面直接部署在同域后端上时用当前源；
+    // 双击本地文件（file://）打开时没有后端 → 本机模式
+    function backendBase() {
+        if (CLOUD) return CLOUD;
+        if (qs('board')) return '';
+        return (location.protocol === 'http:' || location.protocol === 'https:') ? location.origin : '';
+    }
+    function endpoint() {
+        // ?board=<url> 可临时换后端（排查/特殊网络），默认走云端函数
+        var o = qs('board');
+        if (o) return o.replace(/\/+$/, '') + '/?api=board';
+        var b = backendBase();
+        return b ? b + '/?api=board' : '';
+    }
+    function localMode() { return !endpoint(); }
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+    }
+    // 请求超时保护：云端慢/挂住时不让界面一直转圈
+    function withTimeout(p, ms) {
+        return Promise.race([p, new Promise(function (_, rej) {
+            setTimeout(function () { rej(new Error('请求超时（' + Math.round(ms / 1000) + 's）')); }, ms);
+        })]);
+    }
+    function readJSON(k, def) {
+        try { var v = JSON.parse(localStorage.getItem(k) || ''); return v == null ? def : v; } catch (e) { return def; }
+    }
+    function writeJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+    function codes() { return readJSON(CODES_KEY, {}); }
+    function adminToken() { try { return localStorage.getItem(ADMIN_KEY) || ''; } catch (e) { return ''; } }
+    function setAdminToken(v) {
+        try { v ? localStorage.setItem(ADMIN_KEY, v) : localStorage.removeItem(ADMIN_KEY); } catch (e) {}
+    }
+    // 管理员按钮的文案跟着登录状态变
+    function syncAdminBtn() {
+        var b = document.getElementById('boardAdminBtn');
+        if (!b) return;
+        if (adminToken()) {
+            b.textContent = '🔓 管理员（点此退出）';
+            b.className = 'board-admin on';
+            b.title = '当前是管理员：任何一条卡片右侧都会出现「删除」。点一下退出。';
+        } else {
+            b.textContent = '🔑 管理员登录';
+            b.className = 'board-admin';
+            b.title = '网页主人专用：输入口令后，可以删除任何人上传的卡片';
+        }
+    }
+    function nowStr() {
+        var d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; };
+        return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' +
+               p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+    }
+    function setMsg(text, cls) {
+        var el = document.getElementById('boardMsg');
+        if (!el) return;
+        el.textContent = text || '';
+        el.className = 'board-msg' + (cls ? ' ' + cls : '');
+    }
+
+    function render() {
+        var box = document.getElementById('boardList');
+        var stat = document.getElementById('boardStat');
+        var mode = document.getElementById('boardMode');
+        var list = state.items || [];
+        if (box) {
+            if (!list.length) {
+                box.innerHTML = '<div class="board-empty">还没有人上传策略。点上面的「➕ 上传一条专项策略」，写第一条。</div>';
+            } else {
+                var mine = codes();
+                var adm = !!adminToken();
+                var canAll = adm || localMode();   // 管理员可删任意条；本机模式下卡片都在本机
+                box.innerHTML = list.map(function (it) {
+                    var del = (canAll || mine[it.id])
+                        ? ' <button class="board-del" type="button" onclick="boardAskDel(\'' + esc(it.id) + '\')" title="' +
+                          (adm ? '删除这条（管理员权限）' : '删除我上传的这条（凭本机保存的删除码）') + '">删除</button>'
+                        : '';
+                    var body = esc(it.body).replace(/\n/g, '<br>');
+                    return '<div class="board-item">' +
+                        '<div class="board-item-head"><span class="board-item-title">' + esc(it.title) + '</span>' + del + '</div>' +
+                        '<div class="board-item-body">' + body + '</div>' +
+                        '<div class="board-item-meta">' + (it.author ? esc(it.author) + ' · ' : '') + esc(it.createdAt || '') + '</div>' +
+                        '</div>';
+                }).join('');
+            }
+        }
+        if (stat) stat.textContent = list.length + ' 条';
+        if (mode) {
+            mode.textContent = localMode()
+                ? '⚠ 本机模式：内容只存在这台电脑的浏览器里，同事看不到'
+                : '✅ 已共享：所有人的上传都会出现在这里';
+            mode.className = 'board-msg' + (localMode() ? ' err' : '');
+        }
+    }
+
+    window.boardLoad = function (force) {
+        var ep = endpoint();
+        if (!ep) { state.items = readJSON(LOCAL_KEY, []); render(); return; }
+        if (state.loading) return;
+        state.loading = true;
+        var stat = document.getElementById('boardStat');
+        if (stat && force) stat.textContent = '刷新中…';
+        withTimeout(fetch(ep + '&t=' + Date.now(), { cache: 'no-store' }), 9000)
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || !d.ok) throw new Error((d && d.error) || '云端返回异常');
+                state.items = d.items || [];
+                render();
+                if (!state.items.length) setMsg('', '');
+            })
+            .catch(function (e) {
+                if (stat) stat.textContent = '连不上云端';
+                setMsg('看板连不上云端（' + (e.message || '网络错误') + '）。可先在本机暂存，云恢复正常后再上传。', 'err');
+                state.items = readJSON(LOCAL_KEY, []);
+                render();
+            })
+            .then(function () { state.loading = false; });
+    };
+
+    window.boardAdd = function () {
+        var titleEl = document.getElementById('boardTitle');
+        var bodyEl = document.getElementById('boardBody');
+        var authorEl = document.getElementById('boardAuthor');
+        var btn = document.getElementById('boardSubmit');
+        var title = (titleEl.value || '').trim();
+        var body = (bodyEl.value || '').trim();
+        var author = (authorEl.value || '').trim();
+        if (!title) { setMsg('请填「专项事件」', 'err'); titleEl.focus(); return; }
+        if (!body) { setMsg('请填「具体策略」', 'err'); bodyEl.focus(); return; }
+
+        var ep = endpoint();
+        if (!ep) {
+            // 本机模式：只存浏览器
+            var arr = readJSON(LOCAL_KEY, []);
+            var it = { id: 'L' + Date.now(), title: title, body: body, author: author, createdAt: nowStr() };
+            arr.unshift(it);
+            writeJSON(LOCAL_KEY, arr);
+            var c = codes(); c[it.id] = 'local'; writeJSON(CODES_KEY, c);
+            state.items = arr; render();
+            titleEl.value = ''; bodyEl.value = '';
+            setMsg('已存到本机（未共享给同事）', 'ok');
+            return;
+        }
+
+        btn.disabled = true;
+        setMsg('上传中…', '');
+        withTimeout(fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=UTF-8' },   // 用 text/plain 避免跨域预检
+            body: JSON.stringify({ action: 'add', title: title, body: body, author: author })
+        }), 12000)
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || !d.ok) throw new Error((d && d.error) || '上传失败');
+                if (d.item && d.item.delCode) {
+                    var c2 = codes(); c2[d.item.id] = d.item.delCode; writeJSON(CODES_KEY, c2);
+                }
+                state.items = d.items || [];
+                render();
+                titleEl.value = ''; bodyEl.value = ''; authorEl.value = '';
+                setMsg('上传成功，所有人都能看到了', 'ok');
+            })
+            .catch(function (e) { setMsg('上传失败：' + (e.message || '网络错误'), 'err'); })
+            .then(function () { btn.disabled = false; });
+    };
+
+    window.boardAskDel = function (id) {
+        var adm = !!adminToken();
+        var c = codes()[id] || '';
+        var sure = adm
+            ? '以管理员身份删除这条？删除后所有人看板都会看不到。'
+            : '确定删除这条？删除后所有人看板都会看不到。';
+        if (!confirm(sure)) return;
+
+        // 本机模式的卡片：直接删浏览器里的
+        if (c === 'local' || localMode()) {
+            var arr = readJSON(LOCAL_KEY, []).filter(function (x) { return x.id !== id; });
+            writeJSON(LOCAL_KEY, arr);
+            state.items = arr; render();
+            setMsg('已删除', 'ok');
+            return;
+        }
+        if (!c && !adm) {
+            setMsg('这条不是你上传的（本机没有它的删除码），删不了', 'err');
+            return;
+        }
+
+        setMsg('删除中…', '');
+        withTimeout(fetch(endpoint(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+            body: JSON.stringify({ action: 'del', id: id, code: c, adminToken: adm ? adminToken() : '' })
+        }), 12000)
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || !d.ok) throw new Error((d && d.error) || '删除失败');
+                state.items = d.items || [];
+                render();
+                setMsg('已删除', 'ok');
+            })
+            .catch(function (e) {
+                var m = e.message || '网络错误';
+                if (adm && (m.indexOf('过期') > -1 || m.indexOf('令牌') > -1)) {
+                    setAdminToken(''); syncAdminBtn(); render();
+                    m += '（管理员登录已失效，请重新登录）';
+                }
+                setMsg('删除失败：' + m, 'err');
+            });
+    };
+
+    // 管理员登录 / 退出
+    window.boardAdminToggle = function () {
+        if (localMode()) {
+            setMsg('本机模式下卡片都存在这台电脑，直接就能删，不需要管理员登录', '');
+            return;
+        }
+        if (adminToken()) {
+            if (!confirm('退出管理员模式？退出后只能删自己上传的。')) return;
+            setAdminToken('');
+            syncAdminBtn(); render();
+            setMsg('已退出管理员模式', 'ok');
+            return;
+        }
+        var pwd = window.prompt('请输入管理员口令（网页主人专用）：');
+        if (pwd == null) return;
+        pwd = String(pwd).trim();
+        if (!pwd) return;
+        setMsg('校验中…', '');
+        withTimeout(fetch(endpoint(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+            body: JSON.stringify({ action: 'admin', pwd: pwd })
+        }), 12000)
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || !d.ok) throw new Error((d && d.error) || '校验失败');
+                setAdminToken(d.adminToken || '');
+                syncAdminBtn(); render();
+                setMsg('管理员模式已开启：每条卡片右侧都会出现「删除」（有效期 30 天）', 'ok');
+            })
+            .catch(function (e) {
+                var m = e.message || '网络错误';
+                if (m.indexOf('未知操作') > -1) {
+                    m = '云端函数还是旧版，不认识管理员功能 —— 请先更新腾讯云函数代码包';
+                }
+                setMsg('登录失败：' + m, 'err');
+            });
+    };
+
+    window.showBoard = function () {
+        var m = document.getElementById('boardMask');
+        var c = document.getElementById('boardCard');
+        if (m) m.classList.add('show');
+        if (c) c.classList.add('show');
+        setMsg('', '');
+        syncAdminBtn();
+        window.boardLoad(true);
+    };
+    window.hideBoard = function () {
+        var m = document.getElementById('boardMask');
+        var c = document.getElementById('boardCard');
+        if (m) m.classList.remove('show');
+        if (c) c.classList.remove('show');
+    };
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') window.hideBoard();
+    });
+})();
 </script>
 </body>
 </html>
