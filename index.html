@@ -420,7 +420,7 @@
     <span class="page-sub">整段粘贴 → 自动解析 → 表单确认 → 一键复制</span>
     <span class="page-tools">
         <button class="page-board" id="boardBtn" type="button" onclick="showBoard()" title="直播专项策略一览：所有人都能上传，点开看全部">📌 专项策略</button>
-        <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-16 19:40（看板：上传入口缩小 + 正文可划选文字加荧光标注 + 可附腾讯文档表格链接 · 点此看完整日志）</span>
+        <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-17 19:00（修复：纯净模式只写「飘屏：开」不再误弹“识别到礼物需求”提醒 · 点此看完整日志）</span>
     </span>
 </div>
 <div class="app-container">
@@ -3308,7 +3308,7 @@
         if (/^@|直播间|地址|标题|简介|通稿/.test(raw)) return null;
 
         const seg = normInteractLine(raw);
-        const res = { danmu: null, gift: null, giftImplied: false, giftExplicit: false, policy: '', sc: null, cart: null };
+        const res = { danmu: null, gift: null, giftImplied: false, giftExplicit: false, giftReal: false, policy: '', sc: null, cart: null };
         let found = false;
         // 建立/覆盖礼物开关：明确写「礼物/道具/飘屏」的优先，泛称「互动区」只是默认同步
         const setGift = (val, explicit) => {
@@ -3333,6 +3333,7 @@
         const mg = seg.match(/(关闭|禁用|关掉|停用|不开|开启|打开|开放|启用)(礼物|道具|飘屏)/);
         if (mg) {
             setGift(/关闭|禁用|关掉|停用|不开/.test(mg[1]) ? 'off' : 'on', true); found = true;
+            if (mg[2] !== '飘屏') res.giftReal = true;   // 「飘屏」在纯净模式跟互动同步，不算礼物需求（2026-11-17 APEC 案例）
         }
 
         // 观察者网专用两项：醒目留言（SC）/ 购物车。
@@ -3360,6 +3361,7 @@
             found = true;
             if (INTERACT_GIFT_KEY_RE.test(key)) {
                 setGift(off ? 'off' : 'on', true);     // 明确的礼物/飘屏需求，优先级最高
+                if (/礼物|道具|打赏|营收/.test(key)) res.giftReal = true;  // 飘屏不算真礼物需求（纯净模式飘屏跟互动同步）
             } else {
                 // 互动区（互动/弹幕互动/互动区弹幕/评论/弹幕）：弹幕跟着；飘屏默认同步关，若另有礼物需求以那条为准
                 res.danmu = off ? 'off' : 'on';
@@ -3371,7 +3373,7 @@
     }
 
     function smartParse(raw) {
-        const st = { time: [], title: [], titleCands: [], body: [], bodyCands: [], bodyCandIdx: -1, push: [], account: [], rtmp: [], roomIds: [], poster: [], unknown: [], interact: { danmu: null, gift: null, giftExplicit: false, policy: '', sc: null, cart: null }, current: null, currentLabel: null };
+        const st = { time: [], title: [], titleCands: [], body: [], bodyCands: [], bodyCandIdx: -1, push: [], account: [], rtmp: [], roomIds: [], poster: [], unknown: [], interact: { danmu: null, gift: null, giftExplicit: false, giftReal: false, policy: '', sc: null, cart: null }, current: null, currentLabel: null };
         const lines = String(raw || '').split(/\r?\n/);
         for (const rawLine of lines) {
             let line = rawLine.replace(/\u00a0/g, ' ').trim();
@@ -3395,6 +3397,7 @@
                     if (itr.giftExplicit) { st.interact.gift = itr.gift; st.interact.giftExplicit = true; }
                     else if (!st.interact.giftExplicit) { st.interact.gift = itr.gift; }
                 }
+                if (itr.giftReal) st.interact.giftReal = true;   // 出现过真礼物词（礼物/道具/打赏），供纯净模式提醒判断
                 if (itr.policy) st.interact.policy = itr.policy;
                 if (itr.sc) st.interact.sc = itr.sc;
                 if (itr.cart) st.interact.cart = itr.cart;
@@ -3582,8 +3585,8 @@
         // 互动需求：识别到的开关直接落到策略上（支持「弹幕关 + 礼物开」这种组合）
         const hasInteract = !!(st.interact && (st.interact.danmu || st.interact.gift || st.interact.policy));
         if (hasInteract) applyParsedInteract(st.interact);
-        // 纯净模式警惕：文中明确写了「礼物/飘屏：开」就记下来（纯净模式没有礼物功能，输出区会醒目提醒）
-        parsedGiftOn = !!(st.interact && st.interact.giftExplicit && st.interact.gift === 'on');
+        // 纯净模式警惕：只有真礼物词（礼物/道具/打赏，不含飘屏）写「开」才记下来（纯净模式没有礼物功能，输出区会醒目提醒）
+        parsedGiftOn = !!(st.interact && st.interact.giftExplicit && st.interact.gift === 'on' && st.interact.giftReal);
         // 观察者网专用：醒目留言（SC）/ 购物车（本次解析覆盖，未写则为 null → 输出默认开启）
         parsedScCart = {
             sc: (st.interact && st.interact.sc) || null,
@@ -5037,7 +5040,16 @@
     <div class="cl-sub">直播报备格式化工具 · 智能识别 v4 · 按时间倒序</div>
 
     <div class="cl-item hot">
-        <div class="cl-date">2026-11-16 19:40<span class="cl-tag">最新</span></div>
+        <div class="cl-date">2026-11-17 19:00<span class="cl-tag">最新</span></div>
+        <div class="cl-body">
+            <ul>
+                <li><b>修复纯净模式礼物误报</b>：报备里只写「飘屏：开」（即使和「弹幕互动：开」连用）不再弹「识别到礼物需求」红条 —— 纯净模式飘屏本来就跟互动开关同步，不算礼物需求。只有明确写了 <b>礼物 / 道具 / 打赏：开</b> 才会提醒「请评估是否移出」。</li>
+                <li>典型案例：APEC 央视新闻报备（弹幕互动：开，先审后发 + 飘屏：开）之前会误弹，现在正常通过。</li>
+            </ul>
+        </div>
+    </div>
+    <div class="cl-item">
+        <div class="cl-date">2026-11-16 19:40</div>
         <div class="cl-body">
             <ul>
                 <li><b>看板文字荧光标注</b>：在策略正文里<b>划选要强调的几个字</b> → 点「🖍 标注」，那段文字就加荧光黄（只标你选的部分，不动整条）；点荧光处可取消。所有人可见、谁都能标。</li>
@@ -5066,27 +5078,6 @@
             </ul>
         </div>
     </div>
-
-    <div class="cl-item">
-        <div class="cl-date">2026-11-11 16:45</div>
-        <div class="cl-body">
-            <ul>
-                <li><b>醒目留言（SC）/ 购物车 改为按输入判断</b>：不再写死「开启」。识别的写法：<code>醒目留言（SC）：关</code>、<code>SC 关</code>、<code>购物车：关</code>、<code>关闭购物车</code>、<code>醒目留言（开），购物车（关）</code> 等；<b>输入里没提到 → 默认输出「开启」</b>。</li>
-                <li>仅在<b>观察者网 + 黑名单模式</b>时输出这两行（位置仍在 <code>@安娜(peixi) …</code> 正上方），别的账号、纯净模式都不出现。</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="cl-item">
-        <div class="cl-date">2026-11-11 16:30</div>
-        <div class="cl-body">
-            <ul>
-                <li><b>观察者网黑名单模板自动多两行</b>：<code>醒目留言（SC）</code>、<code>购物车</code>，位置在 <code>@安娜(peixi) …</code> 那一行的正上方。别的账号不受影响。</li>
-            </ul>
-        </div>
-    </div>
-
-    
 
     
 
