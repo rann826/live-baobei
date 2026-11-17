@@ -71,12 +71,15 @@
         .board-card h3 { font-size: 1.02rem; font-weight: 800; margin-bottom: 3px; }
         .board-card .board-sub { font-size: .72rem; color: var(--text-secondary); margin-bottom: 14px; }
         .board-card .board-sub b { color: #2563eb; }
-        .board-form-wrap { border: 1px solid #dbeafe; background: #f8fbff; border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; }
-        .board-form-wrap > summary { font-size: .8rem; font-weight: 700; color: #1d4ed8; cursor: pointer; list-style: none; }
+        .board-form-wrap { border: 1px dashed #bfdbfe; background: #f8fbff; border-radius: 8px; padding: 4px 8px; margin-bottom: 10px; }
+        .board-form-wrap > summary { font-size: .72rem; font-weight: 700; color: #1d4ed8; cursor: pointer; list-style: none;
+            display: inline-block; padding: 2px 6px; border-radius: 6px; }
         .board-form-wrap > summary::-webkit-details-marker { display: none; }
-        .board-form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        .board-form input, .board-form textarea { font-family: inherit; font-size: .82rem; color: var(--text);
-            border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; background: #fff; width: 100%; resize: vertical; }
+        .board-form-wrap > summary:hover { background: #eff6ff; }
+        .board-form-wrap[open] > summary { margin-bottom: 2px; }
+        .board-form { display: flex; flex-direction: column; gap: 7px; margin: 6px 2px 8px; }
+        .board-form input, .board-form textarea { font-family: inherit; font-size: .8rem; color: var(--text);
+            border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 9px; background: #fff; width: 100%; resize: vertical; }
         .board-form input:focus, .board-form textarea:focus { outline: none; border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.18); }
         .board-form-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .board-submit { font-family: inherit; font-size: .8rem; font-weight: 700; color: #fff; background: #2563eb;
@@ -90,10 +93,21 @@
         .board-item { border: 1px solid #e2e8f0; border-left: 3px solid #2563eb; border-radius: 10px; padding: 10px 12px; background: #fff; }
         .board-item-head { display: flex; align-items: flex-start; gap: 8px; }
         .board-item-title { font-size: .86rem; font-weight: 800; color: #0f172a; flex: 1; word-break: break-word; }
+        /* 文字荧光标注：只标划选的那几个字 */
+        .board-hl { background: linear-gradient(transparent 32%, #fde047 32%); padding: 0 1px; border-radius: 2px;
+            cursor: pointer; color: inherit; font-weight: inherit; }
+        .board-hl:hover { background: #fde047; }
         .board-del { font-family: inherit; font-size: .68rem; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca;
             border-radius: 6px; padding: 1px 7px; cursor: pointer; flex: none; }
         .board-del:hover { background: #fee2e2; }
-        .board-item-body { font-size: .8rem; line-height: 1.8; color: #334155; margin-top: 5px; word-break: break-word; }
+        .board-mark { font-family: inherit; font-size: .68rem; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
+            border-radius: 6px; padding: 1px 7px; cursor: pointer; flex: none; }
+        .board-mark:hover { background: #fef3c7; }
+        .board-doc { font-family: inherit; font-size: .7rem; color: #0369a1; background: #f0f9ff; border: 1px solid #bae6fd;
+            border-radius: 6px; padding: 1px 8px; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 6px; }
+        .board-doc:hover { background: #e0f2fe; }
+        .board-item-body { font-size: .8rem; line-height: 1.8; color: #334155; margin-top: 5px; word-break: break-word;
+            white-space: pre-wrap; }
         .board-item-meta { font-size: .68rem; color: var(--text-secondary); margin-top: 7px; }
         .board-empty { font-size: .8rem; color: var(--text-secondary); text-align: center; padding: 26px 10px; }
         .board-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
@@ -406,7 +420,7 @@
     <span class="page-sub">整段粘贴 → 自动解析 → 表单确认 → 一键复制</span>
     <span class="page-tools">
         <button class="page-board" id="boardBtn" type="button" onclick="showBoard()" title="直播专项策略一览：所有人都能上传，点开看全部">📌 专项策略</button>
-        <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-16 15:40（专项策略看板加「🔑 管理员登录」，登录后可删除任何人上传的卡片 · 点此看完整日志）</span>
+        <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-16 19:40（看板：上传入口缩小 + 正文可划选文字加荧光标注 + 可附腾讯文档表格链接 · 点此看完整日志）</span>
     </span>
 </div>
 <div class="app-container">
@@ -5023,7 +5037,18 @@
     <div class="cl-sub">直播报备格式化工具 · 智能识别 v4 · 按时间倒序</div>
 
     <div class="cl-item hot">
-        <div class="cl-date">2026-11-16 15:40<span class="cl-tag">最新</span></div>
+        <div class="cl-date">2026-11-16 19:40<span class="cl-tag">最新</span></div>
+        <div class="cl-body">
+            <ul>
+                <li><b>看板文字荧光标注</b>：在策略正文里<b>划选要强调的几个字</b> → 点「🖍 标注」，那段文字就加荧光黄（只标你选的部分，不动整条）；点荧光处可取消。所有人可见、谁都能标。</li>
+                <li><b>上传时可附「直播表格」链接</b>：把腾讯文档链接粘进新增的输入框（可不填），卡片上就会出现 <b>📄 打开直播表格</b> 按钮，一键新标签页跳转。</li>
+                <li><b>上传入口改小</b>：从一大块收缩成一行小按钮「➕ 上传策略」，点开才展开表单。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cl-item">
+        <div class="cl-date">2026-11-16 15:40</div>
         <div class="cl-body">
             <ul>
                 <li><b>看板加「🔑 管理员登录」</b>：点一下输口令，登录后<b>每条卡片都会出现「删除」</b>，可以删掉任何人上传的内容（有效期 30 天，随时可点「退出」）。普通同事看不到这个删除按钮，也删不了别人的。</li>
@@ -5077,13 +5102,14 @@
 <div class="board-card" id="boardCard" role="dialog" aria-label="直播专项策略一览">
     <button class="cl-close" type="button" onclick="hideBoard()" title="关闭">✕</button>
     <h3>📌 直播专项策略一览</h3>
-    <div class="board-sub">所有人可上传 · 上传者凭删除码删自己那条 · 管理员可删任意条 · <span id="boardStat">加载中…</span></div>
+    <div class="board-sub">所有人可上传 · <b>正文里划选文字 → 点「🖍 标注」加荧光</b>（点荧光处可取消）· 上传者凭删除码删自己那条 · 管理员可删任意条 · <span id="boardStat">加载中…</span></div>
 
     <details class="board-form-wrap">
-        <summary>➕ 上传一条专项策略</summary>
+        <summary>➕ 上传策略</summary>
         <div class="board-form">
             <input id="boardTitle" maxlength="80" placeholder="专项事件（必填，例：双十一大促直播 / 某发布会直播）">
-            <textarea id="boardBody" rows="4" maxlength="4000" placeholder="具体策略（必填，例：互动区弹幕关、礼物关；提前 30 分钟开播预热；标题前缀加【专场】）"></textarea>
+            <textarea id="boardBody" rows="3" maxlength="4000" placeholder="具体策略（必填，例：互动区弹幕关、礼物关；提前 30 分钟开播预热；标题前缀加【专场】）"></textarea>
+            <input id="boardDoc" maxlength="300" placeholder="直播表格的腾讯文档链接（可选，粘贴后卡片上会出现「打开表格」按钮）">
             <input id="boardAuthor" maxlength="20" placeholder="你的名字（可选，便于大家找你确认）">
             <div class="board-form-row">
                 <button class="board-submit" id="boardSubmit" type="button" onclick="boardAdd()">提交上传</button>
@@ -5193,6 +5219,40 @@
         el.className = 'board-msg' + (cls ? ' ' + cls : '');
     }
 
+    // 正文按「荧光区间」分段渲染：转义后拼接 <mark>，区间按原文下标算（正文用 pre-wrap 保留换行，
+    // 所以 DOM textContent 恒等于原文，划选偏移量可以直接换算）
+    function mergeRanges(rs, len) {
+        var out = (rs || []).filter(function (r) {
+            return r && typeof r.start === 'number' && typeof r.end === 'number' && r.end > r.start;
+        }).map(function (r) {
+            return { start: Math.max(0, Math.min(len, r.start)), end: Math.max(0, Math.min(len, r.end)) };
+        }).sort(function (a, b) { return a.start - b.start; });
+        var m = [];
+        out.forEach(function (r) {
+            if (m.length && r.start <= m[m.length - 1].end) m[m.length - 1].end = Math.max(m[m.length - 1].end, r.end);
+            else m.push(r);
+        });
+        return m;
+    }
+    function renderBody(it) {
+        var raw = String(it.body == null ? '' : it.body);
+        var rs = mergeRanges(it.highlights, raw.length);
+        var out = '', pos = 0;
+        rs.forEach(function (r, i) {
+            if (r.start > pos) out += esc(raw.slice(pos, r.start));
+            out += '<mark class="board-hl" data-i="' + i + '" title="点一下取消这处荧光标注">' +
+                   esc(raw.slice(r.start, r.end)) + '</mark>';
+            pos = Math.max(pos, r.end);
+        });
+        if (pos < raw.length) out += esc(raw.slice(pos));
+        return out;
+    }
+    function findItem(id) {
+        var list = state.items || [];
+        for (var i = 0; i < list.length; i++) if (String(list[i].id) === String(id)) return list[i];
+        return null;
+    }
+
     function render() {
         var box = document.getElementById('boardList');
         var stat = document.getElementById('boardStat');
@@ -5200,7 +5260,7 @@
         var list = state.items || [];
         if (box) {
             if (!list.length) {
-                box.innerHTML = '<div class="board-empty">还没有人上传策略。点上面的「➕ 上传一条专项策略」，写第一条。</div>';
+                box.innerHTML = '<div class="board-empty">还没有人上传策略。点上面的「➕ 上传策略」，写第一条。</div>';
             } else {
                 var mine = codes();
                 var adm = !!adminToken();
@@ -5210,16 +5270,24 @@
                         ? ' <button class="board-del" type="button" onclick="boardAskDel(\'' + esc(it.id) + '\')" title="' +
                           (adm ? '删除这条（管理员权限）' : '删除我上传的这条（凭本机保存的删除码）') + '">删除</button>'
                         : '';
-                    var body = esc(it.body).replace(/\n/g, '<br>');
+                    var hlBtn = ' <button class="board-mark" type="button" onclick="boardHl(\'' + esc(it.id) + '\')" title="先在正文里划选要标注的文字，再点这里加荧光黄；点已有荧光处可取消">🖍 标注</button>';
+                    var body = renderBody(it);
+                    var doc = '';
+                    if (it.docUrl && /^https?:\/\//i.test(it.docUrl)) {
+                        doc = '<a class="board-doc" href="' + esc(it.docUrl) + '" target="_blank" rel="noopener noreferrer"' +
+                              ' title="打开这条策略对应的直播表格（腾讯文档）">📄 打开直播表格</a>';
+                    }
                     return '<div class="board-item">' +
-                        '<div class="board-item-head"><span class="board-item-title">' + esc(it.title) + '</span>' + del + '</div>' +
-                        '<div class="board-item-body">' + body + '</div>' +
+                        '<div class="board-item-head"><span class="board-item-title">' + esc(it.title) + '</span>' + hlBtn + del + '</div>' +
+                        '<div class="board-item-body" data-id="' + esc(it.id) + '">' + body + '</div>' +
+                        (doc ? doc : '') +
                         '<div class="board-item-meta">' + (it.author ? esc(it.author) + ' · ' : '') + esc(it.createdAt || '') + '</div>' +
                         '</div>';
                 }).join('');
             }
         }
         if (stat) stat.textContent = list.length + ' 条';
+        bindListClick();   // 首次渲染后绑定「点荧光取消」的委托事件
         if (mode) {
             mode.textContent = localMode()
                 ? '⚠ 本机模式：内容只存在这台电脑的浏览器里，同事看不到'
@@ -5255,24 +5323,31 @@
     window.boardAdd = function () {
         var titleEl = document.getElementById('boardTitle');
         var bodyEl = document.getElementById('boardBody');
+        var docEl = document.getElementById('boardDoc');
         var authorEl = document.getElementById('boardAuthor');
         var btn = document.getElementById('boardSubmit');
         var title = (titleEl.value || '').trim();
         var body = (bodyEl.value || '').trim();
+        var docUrl = (docEl && docEl.value || '').trim();
         var author = (authorEl.value || '').trim();
         if (!title) { setMsg('请填「专项事件」', 'err'); titleEl.focus(); return; }
         if (!body) { setMsg('请填「具体策略」', 'err'); bodyEl.focus(); return; }
+        if (docUrl && !/^https?:\/\//i.test(docUrl)) {
+            setMsg('表格链接要以 http:// 或 https:// 开头（留空表示不附表格）', 'err'); docEl.focus(); return;
+        }
 
         var ep = endpoint();
         if (!ep) {
             // 本机模式：只存浏览器
             var arr = readJSON(LOCAL_KEY, []);
             var it = { id: 'L' + Date.now(), title: title, body: body, author: author, createdAt: nowStr() };
+            if (docUrl) it.docUrl = docUrl;
             arr.unshift(it);
             writeJSON(LOCAL_KEY, arr);
             var c = codes(); c[it.id] = 'local'; writeJSON(CODES_KEY, c);
             state.items = arr; render();
             titleEl.value = ''; bodyEl.value = '';
+            if (docEl) docEl.value = '';
             setMsg('已存到本机（未共享给同事）', 'ok');
             return;
         }
@@ -5282,7 +5357,7 @@
         withTimeout(fetch(ep, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=UTF-8' },   // 用 text/plain 避免跨域预检
-            body: JSON.stringify({ action: 'add', title: title, body: body, author: author })
+            body: JSON.stringify({ action: 'add', title: title, body: body, author: author, docUrl: docUrl })
         }), 12000)
             .then(function (r) { return r.json(); })
             .then(function (d) {
@@ -5292,12 +5367,103 @@
                 }
                 state.items = d.items || [];
                 render();
-                titleEl.value = ''; bodyEl.value = ''; authorEl.value = '';
+                titleEl.value = ''; bodyEl.value = '';
+                if (docEl) docEl.value = '';
+                authorEl.value = '';
                 setMsg('上传成功，所有人都能看到了', 'ok');
             })
             .catch(function (e) { setMsg('上传失败：' + (e.message || '网络错误'), 'err'); })
             .then(function () { btn.disabled = false; });
     };
+
+    // 文字荧光标注：把当前划选的文字存成区间 [{start,end}]（所有人共享）
+    function postHl(id, ranges, okMsg) {
+        var ep = endpoint();
+        if (!ep) {
+            // 本机模式：直接改浏览器里的数据
+            var arr = readJSON(LOCAL_KEY, []).map(function (x) {
+                if (String(x.id) !== String(id)) return x;
+                var n = JSON.parse(JSON.stringify(x));
+                if (ranges && ranges.length) n.highlights = ranges; else delete n.highlights;
+                return n;
+            });
+            writeJSON(LOCAL_KEY, arr);
+            state.items = arr; render();
+            setMsg(okMsg, 'ok');
+            return;
+        }
+        setMsg('保存标注中…', '');
+        withTimeout(fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+            body: JSON.stringify({ action: 'hl', id: id, ranges: ranges || [] })
+        }), 12000)
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || !d.ok) throw new Error((d && d.error) || '标注失败');
+                state.items = d.items || [];
+                render();
+                setMsg(okMsg, 'ok');
+            })
+            .catch(function (e) {
+                var m = e.message || '网络错误';
+                if (m.indexOf('未知操作') > -1) {
+                    m = '云端函数还是旧版，不认识文字标注 —— 请先更新腾讯云函数代码包';
+                }
+                setMsg('标注失败：' + m, 'err');
+            });
+    }
+
+    // 划选文字 → 加荧光
+    window.boardHl = function (id) {
+        var it = findItem(id);
+        if (!it) return;
+        var bodyEl = document.querySelector('#boardList .board-item-body[data-id="' + id + '"]');
+        if (!bodyEl) return;
+        var rng = null;
+        try {
+            var sel = window.getSelection();
+            if (sel && sel.rangeCount && !sel.isCollapsed) {
+                var r = sel.getRangeAt(0);
+                if (bodyEl.contains(r.commonAncestorContainer)) {
+                    var pre = r.cloneRange();
+                    pre.selectNodeContents(bodyEl);
+                    pre.setEnd(r.startContainer, r.startOffset);
+                    var start = pre.toString().length;
+                    var len = r.toString().length;
+                    if (len > 0) rng = { start: start, end: start + len };
+                }
+            }
+        } catch (e) { rng = null; }
+        if (!rng) {
+            setMsg('请先在正文里用鼠标划选要标注的文字，再点「🖍 标注」', 'err');
+            return;
+        }
+        var arr = mergeRanges((it.highlights || []).concat([rng]), String(it.body || '').length);
+        try { window.getSelection().removeAllRanges(); } catch (e) {}
+        postHl(id, arr, '已加荧光标注（所有人可见）');
+    };
+
+    // 点荧光处 → 取消这一处
+    function bindListClick() {
+        var box = document.getElementById('boardList');
+        if (!box || box.__hlBound) return;
+        box.__hlBound = true;
+        box.addEventListener('click', function (e) {
+            var t = e.target;
+            if (!t || t.tagName !== 'MARK' || String(t.className).indexOf('board-hl') < 0) return;
+            var bodyEl = t.closest ? t.closest('.board-item-body') : null;
+            if (!bodyEl) return;
+            var id = bodyEl.getAttribute('data-id');
+            var it = findItem(id);
+            if (!it) return;
+            var arr = mergeRanges(it.highlights, String(it.body || '').length);
+            var i = parseInt(t.getAttribute('data-i'), 10);
+            if (isNaN(i) || i < 0 || i >= arr.length) return;
+            arr.splice(i, 1);
+            postHl(id, arr, '已取消这处荧光');
+        });
+    }
 
     window.boardAskDel = function (id) {
         var adm = !!adminToken();
