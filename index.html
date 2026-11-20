@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>直播报备格式化工具 · 智能识别 + 一键复制优化版</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2064%2064%27%3E%3Ccircle%20cx=%2722%27%20cy=%2713%27%20r=%274.5%27%20fill=%27%23fdfdfa%27/%3E%3Ccircle%20cx=%2732%27%20cy=%279.5%27%20r=%275.5%27%20fill=%27%23fdfdfa%27/%3E%3Ccircle%20cx=%2742%27%20cy=%2713%27%20r=%274.5%27%20fill=%27%23fdfdfa%27/%3E%3Crect%20x=%2721%27%20y=%2713%27%20width=%2722%27%20height=%276%27%20rx=%273%27%20fill=%27%23f6f2e9%27/%3E%3Ccircle%20cx=%2716%27%20cy=%2730%27%20r=%273.5%27%20fill=%27%23e5dfd2%27/%3E%3Ccircle%20cx=%2748%27%20cy=%2730%27%20r=%273.5%27%20fill=%27%23e5dfd2%27/%3E%3Cellipse%20cx=%2732%27%20cy=%2736%27%20rx=%2720%27%20ry=%2717%27%20fill=%27%23f4f1ea%27%20stroke=%27%23d8d1c3%27%20stroke-width=%271.5%27/%3E%3Cellipse%20cx=%2718%27%20cy=%2741%27%20rx=%273%27%20ry=%272%27%20fill=%27%23f2c4c4%27%20opacity=%27.55%27/%3E%3Cellipse%20cx=%2746%27%20cy=%2741%27%20rx=%273%27%20ry=%272%27%20fill=%27%23f2c4c4%27%20opacity=%27.55%27/%3E%3Ccircle%20cx=%2724%27%20cy=%2735%27%20r=%274.4%27%20fill=%27%232b2b33%27/%3E%3Ccircle%20cx=%2740%27%20cy=%2735%27%20r=%274.4%27%20fill=%27%232b2b33%27/%3E%3Ccircle%20cx=%2725.5%27%20cy=%2733.5%27%20r=%271.5%27%20fill=%27%23fff%27/%3E%3Ccircle%20cx=%2741.5%27%20cy=%2733.5%27%20r=%271.5%27%20fill=%27%23fff%27/%3E%3Cellipse%20cx=%2732%27%20cy=%2742%27%20rx=%276.5%27%20ry=%275%27%20fill=%27%23e9e3d6%27/%3E%3Cellipse%20cx=%2732%27%20cy=%2740.6%27%20rx=%272.7%27%20ry=%272%27%20fill=%27%236b6f7a%27/%3E%3Crect%20x=%2715%27%20y=%2748%27%20width=%2734%27%20height=%2711%27%20rx=%275.5%27%20fill=%27%238fa3bd%27/%3E%3Crect%20x=%2735%27%20y=%2755%27%20width=%2710%27%20height=%278%27%20rx=%273.5%27%20fill=%27%238fa3bd%27/%3E%3C/svg%3E">
     <style>
         :root {
             --bg: #f5f7fa;
@@ -420,7 +421,7 @@
     <span class="page-sub">整段粘贴 → 自动解析 → 表单确认 → 一键复制</span>
     <span class="page-tools">
         <button class="page-board" id="boardBtn" type="button" onclick="showBoard()" title="直播专项策略一览：所有人都能上传，点开看全部">📌 专项策略</button>
-        <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-17 19:00（修复：纯净模式只写「飘屏：开」不再误弹“识别到礼物需求”提醒 · 点此看完整日志）</span>
+        <span class="page-build" id="pageBuild" onclick="showChangelog()" title="点击查看完整更新日志">🆕 2026-11-20 20:15（涉零模式没填直播时间时，报备里也会写入「辛苦老师配置此刻-24:00：…」 · 点此看完整日志）</span>
     </span>
 </div>
 <div class="app-container">
@@ -538,7 +539,7 @@
     <div class="card card-accent-green card-output">
         <div class="card-header"><h2><span class="step">3</span><span>📄</span> 报备输出</h2><span class="subtitle">生成 · 一键复制富文本</span></div>
         <div class="pure-gift-warn" id="pureGiftWarn"><span class="pgw-tag">🚨</span>该直播间在纯净模式，识别到礼物需求，请评估是否移出<span class="pgw-sub">纯净模式没有礼物功能：下面的结果已按「互动 / 飘屏 同步」输出，礼物开关不参与</span></div>
-        <div class="zero-reminder" id="zeroReminder">⚠️ 涉零模式已开启但未填写直播时间——请记得配置：<b>首黑、全公域xl、禁止上下滑</b></div>
+        <div class="zero-reminder" id="zeroReminder">⚠️ 涉零模式已开启但未填写直播时间——已在报备里按「此刻-24:00」写入：<b>首黑、全公域xl、禁止上下滑</b>；补上开播时间可自动算成具体时段</div>
         <div class="output-area" id="outputArea"><div class="mode-hint" id="modeHint"></div><div class="mode-hint pending" id="templateNote"></div><div class="output-empty" id="outputEmpty">点击「生成报备模板」按钮<br>或直接修改输入后自动生成</div><div id="outputContent" style="display:none;"></div></div>
         <div class="btn-group" style="margin-top:16px;">
             <button class="btn btn-success btn-copy-main" id="wecomCopyBtn"><span>📄</span> 一键复制富文本（文字+封面图）</button>
@@ -3044,8 +3045,9 @@
             }
         }
 
-        // 涉零配置句：仅当涉零且能解析出直播时间段时才写进报备模板。
-        // 时间未填/认不出 → 不出现「待同步」那句，改为在「报备输出」区顶部弹提醒（见下方 zeroReminder）
+        // 涉零配置句：涉零模式必出这一行。
+        //   能解析出直播时间段 → 「辛苦老师配置HH:MM-HH:MM：…」；
+        //   时间未填/认不出 → 用兜底口径「此刻-24:00」，同时在「报备输出」区顶部再弹一条提醒（见下方 zeroReminder）
         let needZeroReminder = false;
         if (isZeroMode) {
             const range = generateZeroTimeRange(timeStrRaw);
@@ -3054,6 +3056,7 @@
                 part1.push('辛苦老师配置' + range + '：' + prefix + '首黑、全公域xl、禁止上下滑');
             } else {
                 needZeroReminder = true;
+                part1.push('辛苦老师配置此刻-24:00：首黑、全公域xl、禁止上下滑');
             }
         }
 
@@ -5040,7 +5043,23 @@
     <div class="cl-sub">直播报备格式化工具 · 智能识别 v4 · 按时间倒序</div>
 
     <div class="cl-item hot">
-        <div class="cl-date">2026-11-17 19:00<span class="cl-tag">最新</span></div>
+        <div class="cl-date">2026-11-20 20:15<span class="cl-tag">最新</span></div>
+        <div class="cl-body">
+            <ul>
+                <li><b>涉零模式没填开播时间时，报备里也带上配置句</b>：输出中直接写 <code>辛苦老师配置此刻-24:00：首黑、全公域xl、禁止上下滑</code>（此前只有顶部弹提醒、报备里没有这行）。补上开播时间后会自动算成具体时段，如 <code>12:00-18:30</code>。</li>
+            </ul>
+        </div>
+    </div>
+    <div class="cl-item">
+        <div class="cl-date">2026-11-20 16:40</div>
+        <div class="cl-body">
+            <ul>
+                <li><b>网页图标换新</b>：标签页图标换成戴厨师帽、围蓝围巾的萌萌小海豹（SVG 内嵌，秒加载）。</li>
+            </ul>
+        </div>
+    </div>
+    <div class="cl-item">
+        <div class="cl-date">2026-11-17 19:00</div>
         <div class="cl-body">
             <ul>
                 <li><b>修复纯净模式礼物误报</b>：报备里只写「飘屏：开」（即使和「弹幕互动：开」连用）不再弹「识别到礼物需求」红条 —— 纯净模式飘屏本来就跟互动开关同步，不算礼物需求。只有明确写了 <b>礼物 / 道具 / 打赏：开</b> 才会提醒「请评估是否移出」。</li>
